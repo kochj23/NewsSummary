@@ -581,20 +581,19 @@ class VoiceCapabilities {
 
 class AnalysisCapabilities {
     func summarize(_ content: String) async throws -> String {
-        return try await AIBackendManager.shared.generate(prompt: "Summarize:\n\n\(content)", systemPrompt: "Create clear, concise summaries.", temperature: 0.3, maxTokens: 500)
+        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Use News Summary's built-in summarization features"])
     }
 
     func factCheck(_ content: String) async throws -> [String] {
-        let response = try await AIBackendManager.shared.generate(prompt: "Fact-check and list false claims:\n\n\(content)", systemPrompt: "You are a fact-checker.", temperature: 0.2, maxTokens: 500)
-        return response.components(separatedBy: "\n").filter { !$0.isEmpty }
+        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Use News Summary's built-in fact checking features"])
     }
 
     func detectBias(_ content: String) async throws -> String {
-        return try await AIBackendManager.shared.generate(prompt: "Analyze for bias:\n\n\(content)", systemPrompt: "You are an objective bias detector.", temperature: 0.2, maxTokens: 300)
+        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Use News Summary's built-in bias detection features"])
     }
 
     func analyzeSentiment(_ content: String) async throws -> String {
-        return try await AIBackendManager.shared.generate(prompt: "Analyze sentiment:\n\n\(content)", systemPrompt: "Provide sentiment classification.", temperature: 0.1, maxTokens: 200)
+        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Use News Summary's built-in sentiment analysis features"])
     }
 }
 

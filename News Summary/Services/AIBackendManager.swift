@@ -54,6 +54,24 @@ class AIBackendManager: ObservableObject {
     @Published var activeBackend: AIBackend = .ollama
     @Published var lastRefreshDate: Date?
 
+    // Cloud AI Services - API Keys (WARNING: Use Keychain in production!)
+    @Published var openAIAPIKey: String = ""
+    @Published var googleCloudAPIKey: String = ""
+    @Published var azureAPIKey: String = ""
+    @Published var azureEndpoint: String = ""
+    @Published var awsAccessKey: String = ""
+    @Published var awsSecretKey: String = ""
+    @Published var awsRegion: String = "us-east-1"
+    @Published var ibmWatsonAPIKey: String = ""
+    @Published var ibmWatsonURL: String = ""
+
+    // Cloud availability
+    @Published var isOpenAIAvailable = false
+    @Published var isGoogleCloudAvailable = false
+    @Published var isAzureAvailable = false
+    @Published var isAWSAvailable = false
+    @Published var isIBMWatsonAvailable = false
+
     // MARK: - Backend Enum
 
     enum AIBackend: String, CaseIterable {
@@ -62,6 +80,11 @@ class AIBackendManager: ObservableObject {
         case tinyLLM = "TinyLLM"
         case tinyChat = "TinyChat"
         case openWebUI = "OpenWebUI"
+        case openAI = "OpenAI"
+        case googleCloud = "Google Cloud AI"
+        case azureCognitive = "Microsoft Azure"
+        case awsAI = "AWS AI Services"
+        case ibmWatson = "IBM Watson"
 
         var description: String {
             switch self {
@@ -75,6 +98,16 @@ class AIBackendManager: ObservableObject {
                 return "TinyChat by Jason Cox - Fast chatbot interface (localhost:8000)"
             case .openWebUI:
                 return "OpenWebUI - Self-hosted AI platform (localhost:8080)"
+            case .openAI:
+                return "OpenAI API - GPT-4o, DALL-E 3 (api.openai.com)"
+            case .googleCloud:
+                return "Google Cloud AI - Vision, Speech, Translation (cloud.google.com)"
+            case .azureCognitive:
+                return "Microsoft Azure Cognitive Services - Speech, Vision, Language"
+            case .awsAI:
+                return "AWS AI Services - Rekognition, Polly, Comprehend"
+            case .ibmWatson:
+                return "IBM Watson API - NLU, Speech, Discovery"
             }
         }
 
@@ -109,6 +142,36 @@ class AIBackendManager: ObservableObject {
                 1. Docker: docker run -p 3000:8080 ghcr.io/open-webui/open-webui:main
                 2. Or pip: pip install open-webui && open-webui serve
                 3. Access: http://localhost:8080 or http://localhost:3000
+                """
+            case .openAI:
+                return """
+                1. Sign up: https://platform.openai.com
+                2. Create API Key
+                3. Enter key in settings
+                """
+            case .googleCloud:
+                return """
+                1. Enable Vertex AI: https://cloud.google.com/vertex-ai
+                2. Create service account and download JSON key
+                3. Enter API key in settings
+                """
+            case .azureCognitive:
+                return """
+                1. Create Azure account: https://azure.microsoft.com
+                2. Create Cognitive Services resource
+                3. Copy endpoint URL and API key
+                """
+            case .awsAI:
+                return """
+                1. Sign up: https://aws.amazon.com
+                2. Create IAM user with Bedrock access
+                3. Generate access key and secret key
+                """
+            case .ibmWatson:
+                return """
+                1. Sign up: https://www.ibm.com/watson
+                2. Create Watson Assistant service
+                3. Copy API key and service URL
                 """
             }
         }
@@ -150,6 +213,14 @@ class AIBackendManager: ObservableObject {
             isComfyUIAvailable = comfyUI
             isAutomatic1111Available = automatic1111
             isSwarmUIAvailable = swarmUI
+
+            // Check cloud services availability (based on API key presence)
+            isOpenAIAvailable = !openAIAPIKey.isEmpty
+            isGoogleCloudAvailable = !googleCloudAPIKey.isEmpty
+            isAzureAvailable = !azureAPIKey.isEmpty && !azureEndpoint.isEmpty
+            isAWSAvailable = !awsAccessKey.isEmpty && !awsSecretKey.isEmpty
+            isIBMWatsonAvailable = !ibmWatsonAPIKey.isEmpty && !ibmWatsonURL.isEmpty
+
             lastRefreshDate = Date()
         }
 
@@ -311,6 +382,17 @@ class AIBackendManager: ObservableObject {
         swarmUIServerURL = defaults.string(forKey: "AIBackend_SwarmUIURL") ?? "http://localhost:7801"
         selectedOllamaModel = defaults.string(forKey: "AIBackend_OllamaModel") ?? "mistral:latest"
 
+        // Cloud API Keys (WARNING: These should be in Keychain in production!)
+        openAIAPIKey = defaults.string(forKey: "AIBackend_OpenAI_Key") ?? ""
+        googleCloudAPIKey = defaults.string(forKey: "AIBackend_GoogleCloud_Key") ?? ""
+        azureAPIKey = defaults.string(forKey: "AIBackend_Azure_Key") ?? ""
+        azureEndpoint = defaults.string(forKey: "AIBackend_Azure_Endpoint") ?? ""
+        awsAccessKey = defaults.string(forKey: "AIBackend_AWS_AccessKey") ?? ""
+        awsSecretKey = defaults.string(forKey: "AIBackend_AWS_SecretKey") ?? ""
+        awsRegion = defaults.string(forKey: "AIBackend_AWS_Region") ?? "us-east-1"
+        ibmWatsonAPIKey = defaults.string(forKey: "AIBackend_IBM_Key") ?? ""
+        ibmWatsonURL = defaults.string(forKey: "AIBackend_IBM_URL") ?? ""
+
         if let backendRaw = defaults.string(forKey: "AIBackend_Active"),
            let backend = AIBackend(rawValue: backendRaw) {
             activeBackend = backend
@@ -328,6 +410,18 @@ class AIBackendManager: ObservableObject {
         defaults.set(automatic1111ServerURL, forKey: "AIBackend_Automatic1111URL")
         defaults.set(swarmUIServerURL, forKey: "AIBackend_SwarmUIURL")
         defaults.set(selectedOllamaModel, forKey: "AIBackend_OllamaModel")
+
+        // Cloud API Keys (WARNING: These should be in Keychain in production!)
+        defaults.set(openAIAPIKey, forKey: "AIBackend_OpenAI_Key")
+        defaults.set(googleCloudAPIKey, forKey: "AIBackend_GoogleCloud_Key")
+        defaults.set(azureAPIKey, forKey: "AIBackend_Azure_Key")
+        defaults.set(azureEndpoint, forKey: "AIBackend_Azure_Endpoint")
+        defaults.set(awsAccessKey, forKey: "AIBackend_AWS_AccessKey")
+        defaults.set(awsSecretKey, forKey: "AIBackend_AWS_SecretKey")
+        defaults.set(awsRegion, forKey: "AIBackend_AWS_Region")
+        defaults.set(ibmWatsonAPIKey, forKey: "AIBackend_IBM_Key")
+        defaults.set(ibmWatsonURL, forKey: "AIBackend_IBM_URL")
+
         defaults.set(activeBackend.rawValue, forKey: "AIBackend_Active")
     }
 }

@@ -1,0 +1,2 @@
+Target dependency graph (1 target)
+Target 'News Summary' in project 'News Summary' (no dependencies)

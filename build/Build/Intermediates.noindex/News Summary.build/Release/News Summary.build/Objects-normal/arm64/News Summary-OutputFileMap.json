@@ -1,0 +1,91 @@
+{
+  "" : {
+    "const-values" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.d",
+    "diagnostics" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.dia",
+    "emit-module-dependencies" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary-emit-module.dia",
+    "pch" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.swiftdeps"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Managers/NewsAggregator.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsAggregator.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsAggregator.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsAggregator.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Managers/RSSParser.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/RSSParser.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/RSSParser.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/RSSParser.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Models/BiasRating.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BiasRating.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BiasRating.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BiasRating.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Models/NewsArticle.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsArticle.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsArticle.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsArticle.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Models/NewsCategory.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsCategory.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsCategory.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsCategory.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Models/NewsSource.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsSource.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsSource.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsSource.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/NewsSummaryApp.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsSummaryApp.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsSummaryApp.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsSummaryApp.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Services/AIBackendManager.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/AIBackendManager.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/AIBackendManager.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/AIBackendManager.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/ViewModels/NewsEngine.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsEngine.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsEngine.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/NewsEngine.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/ArticleDetailView.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleDetailView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleDetailView.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleDetailView.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/ArticleFeedView.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleFeedView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleFeedView.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleFeedView.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/CategoryTabView.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/CategoryTabView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/CategoryTabView.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/CategoryTabView.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/Components/ArticleCard.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleCard.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleCard.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ArticleCard.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/Components/BiasIndicatorView.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BiasIndicatorView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BiasIndicatorView.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BiasIndicatorView.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/Components/BreakingNewsBanner.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BreakingNewsBanner.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BreakingNewsBanner.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/BreakingNewsBanner.o"
+  },
+  "/Volumes/Data/xcode/News Summary/News Summary/Views/ContentView.swift" : {
+    "index-unit-output-path" : "/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/ContentView.o"
+  }
+}

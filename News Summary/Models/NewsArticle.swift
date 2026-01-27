@@ -28,6 +28,12 @@ struct NewsArticle: Identifiable, Codable, Hashable {
     var importance: Int               // 1-10 scale
     var isFavorite: Bool
 
+    // Compatibility aliases for new AI services
+    var link: String? { url.absoluteString }
+    var articleDescription: String? { rssDescription }
+    var content: String? { scrapedContent }
+    var aiSummary: String? { summary }
+
     init(
         id: UUID = UUID(),
         title: String,

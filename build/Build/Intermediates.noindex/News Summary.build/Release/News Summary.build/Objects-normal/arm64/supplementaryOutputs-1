@@ -1,0 +1,12 @@
+{
+  "/Volumes/Data/xcode/News Summary/News Summary/NewsSummaryApp.swift" : {
+    "abi-baseline-json" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News_Summary.abi.json",
+    "const-values" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.swiftconstvalues",
+    "dependencies" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.d",
+    "diagnostics" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News Summary-primary.dia",
+    "objc-header" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News_Summary-Swift.h",
+    "swiftdoc" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News_Summary.swiftdoc",
+    "swiftmodule" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News_Summary.swiftmodule",
+    "swiftsourceinfo" : "/Volumes/Data/xcode/News Summary/build/Build/Intermediates.noindex/News Summary.build/Release/News Summary.build/Objects-normal/arm64/News_Summary.swiftsourceinfo"
+  }
+}

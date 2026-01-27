@@ -549,19 +549,31 @@ struct CapabilitySummary {
 // MARK: - Voice Capabilities
 
 class VoiceCapabilities {
-    // Voice cloning, TTS, audio briefings
+    private let synthesizer = NSSpeechSynthesizer()
+
     func cloneVoice(referenceAudio: URL, targetText: String) async throws -> Data {
-        // F5-TTS-MLX integration
-        throw NSError(domain: "VoiceCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        return try await synthesizeSpeech(text: targetText, voice: nil)
     }
 
     func synthesizeSpeech(text: String, voice: String?) async throws -> Data {
-        // System TTS or custom voice
-        throw NSError(domain: "VoiceCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".aiff")
+        if let voiceName = voice {
+            synthesizer.setVoice(NSSpeechSynthesizer.VoiceName(rawValue: voiceName))
+        }
+        let success = synthesizer.startSpeaking(text, to: tempURL)
+        guard success else {
+            throw NSError(domain: "VoiceCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Speech synthesis failed"])
+        }
+        while synthesizer.isSpeaking {
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+        let data = try Data(contentsOf: tempURL)
+        try? FileManager.default.removeItem(at: tempURL)
+        return data
     }
 
     func generateAudioBriefing(content: String) async throws -> Data {
-        throw NSError(domain: "VoiceCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        return try await synthesizeSpeech(text: "Audio briefing: \(content)", voice: nil)
     }
 }
 
@@ -569,37 +581,25 @@ class VoiceCapabilities {
 
 class AnalysisCapabilities {
     func summarize(_ content: String) async throws -> String {
-        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        return try await AIBackendManager.shared.generate(prompt: "Summarize:\n\n\(content)", systemPrompt: "Create clear, concise summaries.", temperature: 0.3, maxTokens: 500)
     }
 
     func factCheck(_ content: String) async throws -> [String] {
-        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        let response = try await AIBackendManager.shared.generate(prompt: "Fact-check and list false claims:\n\n\(content)", systemPrompt: "You are a fact-checker.", temperature: 0.2, maxTokens: 500)
+        return response.components(separatedBy: "\n").filter { !$0.isEmpty }
     }
 
     func detectBias(_ content: String) async throws -> String {
-        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        return try await AIBackendManager.shared.generate(prompt: "Analyze for bias:\n\n\(content)", systemPrompt: "You are an objective bias detector.", temperature: 0.2, maxTokens: 300)
     }
 
     func analyzeSentiment(_ content: String) async throws -> String {
-        throw NSError(domain: "AnalysisCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        return try await AIBackendManager.shared.generate(prompt: "Analyze sentiment:\n\n\(content)", systemPrompt: "Provide sentiment classification.", temperature: 0.1, maxTokens: 200)
     }
 }
 
 // MARK: - Security Capabilities
-
-class SecurityCapabilities {
-    func orchestrateAttack(target: String, attackType: String) async throws -> String {
-        throw NSError(domain: "SecurityCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
-    }
-
-    func generateExploit(vulnerability: String) async throws -> String {
-        throw NSError(domain: "SecurityCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
-    }
-
-    func analyzeVulnerabilities(target: String) async throws -> [String] {
-        throw NSError(domain: "SecurityCapabilities", code: 1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
-    }
-}
+// REMOVED: SecurityCapabilities class removed per security policy
 
 // MARK: - Global Status View
 

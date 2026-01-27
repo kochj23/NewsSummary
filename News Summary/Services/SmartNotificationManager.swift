@@ -142,8 +142,14 @@ class SmartNotificationManager: ObservableObject {
     }
 
     private func getUnreadCount() async -> Int {
-        // This would integrate with reading tracking
-        return 0 // Placeholder
+        // Count unread articles from NewsEngine
+        let newsEngine = await NewsEngine.shared
+        let allArticles = await newsEngine.articles.values.flatMap { $0 }
+        let unreadArticles = allArticles.filter { article in
+            // Articles are unread if not in read history
+            !UserDefaults.standard.bool(forKey: "article_read_\(article.id.uuidString)")
+        }
+        return unreadArticles.count
     }
 
     // MARK: - Preferences

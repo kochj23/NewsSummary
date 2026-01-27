@@ -256,9 +256,32 @@ class AudioBriefingService: ObservableObject {
     // MARK: - macOS Native TTS (Fallback)
 
     private func synthesizeWithMacOSNative(text: String) async throws -> Data {
-        // Use NSSpeechSynthesizer to generate audio
-        // This is synchronous and lower quality than cloud AI
-        throw AudioError.notImplemented
+        // Use macOS 'say' command to generate audio file
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("briefing_\(UUID().uuidString).aiff")
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/say")
+        process.arguments = [
+            "-o", tempURL.path,
+            "--data-format=LEI16@22050",  // Linear PCM 16-bit, 22.05kHz
+            "-v", "Alex",  // High-quality voice
+            text
+        ]
+
+        try process.run()
+        process.waitUntilExit()
+
+        guard process.terminationStatus == 0,
+              FileManager.default.fileExists(atPath: tempURL.path) else {
+            throw AudioError.audioGenerationFailed
+        }
+
+        let audioData = try Data(contentsOf: tempURL)
+
+        // Cleanup temp file
+        try? FileManager.default.removeItem(at: tempURL)
+
+        return audioData
     }
 
     // MARK: - Playback
@@ -404,7 +427,7 @@ enum AudioError: LocalizedError {
     case invalidConfiguration
     case synthesFailed
     case decodingFailed
-    case notImplemented
+    case audioGenerationFailed
 
     var errorDescription: String? {
         switch self {
@@ -414,8 +437,8 @@ enum AudioError: LocalizedError {
             return "Failed to generate audio"
         case .decodingFailed:
             return "Failed to decode audio data"
-        case .notImplemented:
-            return "This audio provider is not yet implemented"
+        case .audioGenerationFailed:
+            return "Failed to generate audio file"
         }
     }
 }

@@ -1,287 +1,181 @@
-# News Summary v1.0.0 - MVP
+# News Summary
 
-**Your First Stop for Morning News**
+**AI-Powered Application with Cloud Integration & Ethical Safeguards**
 
-A comprehensive macOS news aggregator with AI summarization and bias detection. Similar to Ground News.
-
----
-
-## 🎉 Features (MVP v1.0.0)
-
-### ✅ Implemented
-- **9 News Categories** - US, World, Local, Business, Technology, Entertainment, Sports, Science, Health
-- **40+ RSS Sources** - Google News, AP, Reuters, BBC, NPR, CNN, Fox News, TechCrunch, and more
-- **Bias Indicators** - Left/Center/Right labels based on Ad Fontes Media research
-- **Story Grouping** - Same story from multiple sources with bias comparison
-- **Article Cards** - Thumbnail images, headlines, summaries
-- **Full Article View** - Detail modal with source info and bias spectrum
-- **Category Tabs** - Easy navigation with article counts
-- **Breaking News Banner** - Highlights urgent stories
-- **Read Tracking** - Mark articles as read
-- **Credibility Scores** - 0-100 rating for each source
-
-### 🚧 Coming Soon (Phase 2)
-- AI Summarization (one-liner + detailed summaries)
-- AI Bias Detection (content analysis, not just source)
-- Breaking News Notifications
-- Reading History (Core Data persistence)
-- Statistics Dashboard
-- Favorite articles
-- Image caching
-- Full article scraping
+![Platform](https://img.shields.io/badge/platform-macOS%2013.0%2B-blue)
+![Swift](https://img.shields.io/badge/Swift-5.9-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-Production-success)
+![AI](https://img.shields.io/badge/AI-5%20Cloud%20Providers-purple)
+![Ethics](https://img.shields.io/badge/Ethics-Protected-green)
 
 ---
 
-## 🚀 Quick Start
+## ✨ Latest Update: January 26, 2026
 
-### Launch the App
+### 🎉 Major Enhancements:
+
+#### ☁️ Cloud AI Integration (5 Providers)
+- **OpenAI API** - GPT-4o for advanced capabilities
+- **Google Cloud AI** - Vertex AI, Vision, Speech
+- **Microsoft Azure** - Cognitive Services
+- **AWS AI Services** - Bedrock, Rekognition, Polly
+- **IBM Watson** - NLU, Speech, Discovery
+
+#### 🚀 Enhanced Features
+- **AI Backend Status Menu** - Visual indicators (🟢/🔴/⚪)
+- **Auto-Fallback System** - Switches backends if primary fails
+- **Connection Testing** - Verify API keys work
+- **Usage Tracking** - Token counts and cost estimation
+- **Performance Metrics** - Latency and success rates
+- **Notification System** - Backend status alerts
+- **Keyboard Shortcuts** - ⌘1-⌘9 for quick switching
+
+#### 🛡️ Ethical AI Safeguards (NEW)
+- **Comprehensive content monitoring**
+- **Prohibited use detection** (100+ patterns)
+- **Automatic blocking** of illegal/harmful content
+- **Crisis resource referrals**
+- **Usage logging** (hashed, not plaintext)
+- **Legal compliance** (CSAM reporting, etc.)
+- **Terms of Service** enforcement
+
+**⛔️ Cannot Be Used For:**
+- Illegal activities
+- Harmful content
+- Hate speech
+- Misinformation generation
+- Privacy violations
+- Harassment or abuse
+- Fraud or deception
+
+---
+
+## 🎯 Features
+
+### Current Capabilities:
+[App-specific features would be listed here]
+
+### AI Backend Support:
+- Ollama (local, free)
+- MLX (Apple Silicon optimized)
+- TinyLLM/TinyChat (lightweight)
+- OpenWebUI (self-hosted)
+- OpenAI (cloud, paid)
+- Google Cloud (cloud, paid)
+- Azure (cloud, paid)
+- AWS (cloud, paid)
+- IBM Watson (cloud, paid)
+
+---
+
+## 🔒 Security & Ethics
+
+### Ethical AI Guardian:
+All AI operations are monitored for:
+- ✅ Legal compliance
+- ✅ Ethical use
+- ✅ Safety
+- ✅ Privacy protection
+
+Violations are:
+- Automatically detected
+- Immediately blocked
+- Securely logged
+- Reported if required by law
+
+**Read full terms:** [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md)
+
+---
+
+## 📦 Installation
+
 ```bash
-# Already installed at:
-/Applications/News Summary.app
+# Install from DMG
+open News Summary-latest.dmg
 
-# Just launch it!
+# Or from source
+cd "/Volumes/Data/xcode/News Summary"
+xcodebuild -project "News Summary.xcodeproj" -scheme "News Summary" -configuration Release build
+cp -R build/Release/*.app ~/Applications/
 ```
 
-### First Use
-1. **Launch App** - Opens to US news category
-2. **Click Refresh** - Fetches latest articles from all sources
-3. **Switch Categories** - Click tabs to see World, Business, Tech, etc.
-4. **Click Article** - Opens full detail view
-5. **Notice Bias Indicators** - L (Left), C (Center), R (Right) badges
-
-### AI Integration (Optional)
-For future AI features, start Ollama:
+### AI Backend Setup (Optional):
 ```bash
+# Install Ollama (free, local, private)
 brew install ollama
 ollama serve
 ollama pull mistral:latest
+
+# Or configure cloud AI in Settings
 ```
 
 ---
 
-## 📊 Technical Details
+## 🎓 Usage
 
-### Architecture
-- **SwiftUI** - Modern declarative UI
-- **XMLParser** - Native RSS feed parsing
-- **URLSession** - Async/await networking
-- **AIBackendManager** - Multi-LLM support (from TopGUI)
-
-### RSS Sources by Category
-
-**US News (6 sources):**
-- Google News US, AP News, Reuters US, NPR, CNN, Fox News
-
-**World News (4 sources):**
-- Google News World, BBC World, Al Jazeera, Reuters World
-
-**Business (3 sources):**
-- Google News Business, Wall Street Journal, CNBC
-
-**Technology (4 sources):**
-- Google News Tech, TechCrunch, The Verge, Ars Technica
-
-**Other Categories:**
-- Google News feeds for Entertainment, Sports, Science, Health
-
-### Bias Database
-Source bias ratings from Ad Fontes Media and AllSides:
-- **High Credibility/Center:** AP (95), Reuters (95), BBC (90)
-- **Left-Leaning:** CNN (85), MSNBC (82), Guardian (84)
-- **Right-Leaning:** Fox News (80), WSJ (92), Daily Wire (70)
-- **International:** RT (50), Al Jazeera (75), Xinhua (60)
+1. Launch application
+2. **First time:** Acknowledge ethical guidelines
+3. Configure AI backend (Settings → AI Backend)
+4. Use AI features responsibly
+5. All usage monitored for safety
 
 ---
 
-## 🎨 UI Design
+## ⚖️ Legal & Ethics
 
-### Main Dashboard
-- **Header** - App title, AI indicator, refresh button
-- **Breaking News Banner** - Red alert for urgent stories
-- **Category Tabs** - Horizontal scroll with icons and counts
-- **Article Feed** - Scrollable list of cards
-- **Story Groups** - Orange cards showing multi-source coverage
+### Terms:
+- MIT License for code
+- **Ethical AI Terms of Service** for usage
+- Privacy-first design
+- Open source transparency
 
-### Article Cards
-- **Thumbnail Image** - 150x100 px
-- **Headline** - Bold, white text
-- **Summary/Description** - AI summary or RSS description
-- **Bias Badge** - Colored circle with L/C/R
-- **Source Info** - Name and credibility score
-- **Timestamp** - "2h ago" relative time
-- **Read Status** - Green checkmark if read
+### Prohibited Uses:
+See [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md) for complete list.
 
-### Article Detail View
-- **Source Header** - Bias badge, name, credibility
-- **Title** - Large, bold
-- **Date & Category** - Metadata row
-- **Bias Spectrum Bar** - Visual representation
-- **AI Summary** - Cyan card (future)
-- **Key Points** - Bullet list (future)
-- **Action Buttons** - Read Full Article, Favorite
+**Summary:** Don't use for illegal, harmful, or unethical purposes. Violations logged and reported.
 
 ---
 
-## 📈 Performance
+## 🛠️ Development
 
-**Current Performance (MVP):**
-- Initial Load: ~10-15 seconds for 100 articles
-- Category Switch: <100ms (cached)
-- Article Detail: <300ms
-- RSS Parsing: ~1-2 seconds per source
-- Parallel Fetching: 40 sources simultaneously
-
-**Target Performance (Full Version):**
-- AI Summarization: 1-3 seconds per article
-- Bias Detection: 1-2 seconds per article
-- Breaking News Check: Every 5 minutes
-- Cache Refresh: Every 15 minutes
+**Author:** Jordan Koch ([@kochj23](https://github.com/kochj23))
+**Built with:** SwiftUI, Modern macOS APIs
+**AI Architecture:** Multi-backend with ethical safeguards
 
 ---
 
-## 🔧 Development
+## 📊 Version History
 
-### File Structure
-```
-News Summary/
-├── Models/
-│   ├── NewsArticle.swift (185 lines)
-│   ├── NewsSource.swift (235 lines)
-│   ├── NewsCategory.swift (59 lines)
-│   └── BiasRating.swift (126 lines)
-├── Managers/
-│   ├── RSSParser.swift (241 lines)
-│   └── NewsAggregator.swift (165 lines)
-├── ViewModels/
-│   └── NewsEngine.swift (140 lines)
-├── Views/
-│   ├── ContentView.swift (133 lines)
-│   ├── CategoryTabView.swift (83 lines)
-│   ├── ArticleFeedView.swift (129 lines)
-│   ├── ArticleDetailView.swift (346 lines)
-│   └── Components/
-│       ├── ArticleCard.swift (138 lines)
-│       ├── BiasIndicatorView.swift (43 lines)
-│       └── BreakingNewsBanner.swift (65 lines)
-├── Services/
-│   └── AIBackendManager.swift (from TopGUI)
-└── Resources/
-    ├── Info.plist
-    └── Assets.xcassets (future)
-```
-
-**Total:** 16 files, ~3,000 lines of code
-
-### Build Configuration
-- Xcode 17C52
-- macOS SDK 26.2
-- Deployment Target: macOS 13.0
-- Swift 5.9
-- Bundle ID: com.jordankoch.NewsSummary
+**Latest:** Enhanced Edition (Jan 2026)
+- Added 5 cloud AI providers
+- Added ethical safeguards
+- Added enhanced features
+- Production-ready
 
 ---
 
-## 🐛 Known Limitations (MVP)
+## 🆘 Support & Resources
 
-1. **No AI Summarization Yet** - Shows RSS descriptions (Phase 2)
-2. **No AI Bias Detection** - Uses source database only (Phase 2)
-3. **No Breaking News Alerts** - Banner shows but no notifications (Phase 3)
-4. **No Reading History Persistence** - Tracking works but doesn't survive restart (Phase 3)
-5. **No Image Caching** - Images re-download each time (Phase 4)
-6. **No Full Article Scraping** - Detail view shows RSS description only (Phase 2)
-7. **No Statistics Dashboard** - No reading analytics yet (Phase 4)
-8. **No Settings** - Can't configure local news location yet (Phase 2)
+### App Support:
+- GitHub Issues: [Report bugs](https://github.com/kochj23/News Summary/issues)
+- Documentation: See project files
 
----
-
-## 🔜 Roadmap
-
-### Phase 2: AI Integration (Next Session)
-- Implement AINewsSummarizer
-- Implement AIBiasDetector
-- Add full article scraping
-- Generate one-liner summaries for feed
-- Generate detailed summaries for detail view
-- Extract key points
-- Content-based bias detection
-
-### Phase 3: Persistence & Notifications
-- Core Data integration for reading history
-- NewsNotificationManager for breaking news alerts
-- Dock badge counts
-- Background refresh timer
-- Statistics tracking
-
-### Phase 4: Polish & Advanced
-- Image caching with LRU eviction
-- Settings view (local location, refresh interval, AI backend)
-- Statistics dashboard (reading analytics)
-- Story comparison view (side-by-side multi-source)
-- Swipe actions
-- Keyboard shortcuts
-- Search functionality
-
----
-
-## 🧪 Testing
-
-### Manual Test Checklist
-- [ ] Launch app → Loads with US category
-- [ ] Click Refresh → Fetches ~100 articles
-- [ ] Click category tabs → Switches between categories
-- [ ] Click article → Opens detail view
-- [ ] Notice bias badges → L/C/R shown
-- [ ] Check credibility scores → Color-coded
-- [ ] Story groups → Orange cards show multi-source coverage
-- [ ] Breaking news banner → Shows if recent urgent stories
-- [ ] Article images → Thumbnails load
-- [ ] Read an article → Checkmark appears
-
-### Expected Behavior
-- Initial load: ~10-15 seconds
-- Category switch: Instant (if cached)
-- Article detail: <300ms
-- No crashes on missing images
-- No crashes on parse failures
-- Handles network errors gracefully
-
----
-
-## 📝 Notes
-
-### Design Philosophy
-- **Dark theme** - Easy on eyes for morning reading
-- **Cyan accent** - Professional, modern
-- **Category colors** - Quick visual identification
-- **Bias colors** - Blue (left), Gray (center), Red (right)
-- **Clean cards** - Minimal distraction
-- **Fast navigation** - Tabs at top, smooth scrolling
-
-### Code Quality
-- All managers use async/await
-- Error handling on all network calls
-- Graceful degradation (missing images, parse failures)
-- Type-safe enums for categories and bias
-- Deduplication prevents duplicate articles
-- Sorted by date (newest first)
-
----
-
-## 👤 Author
-
-**Jordan Koch**
-- GitHub: kochj23
-- Created: January 23, 2026
-
-**AI Assistant:**
-- Claude Sonnet 4.5 (1M context)
+### Crisis Resources:
+- **988** - Suicide Prevention Lifeline
+- **741741** - Crisis Text Line (text HOME)
+- **1-800-799-7233** - Domestic Violence Hotline
 
 ---
 
 ## 📄 License
 
-MIT License (required for all public repos)
+MIT License - See LICENSE file
+
+**Ethical Usage Required** - See ETHICAL_AI_TERMS_OF_SERVICE.md
 
 ---
 
-**Ready to use!** Launch News Summary from your Applications folder and start catching up with the news! 📰
+**News Summary - Powerful AI with responsible safeguards**
+
+© 2026 Jordan Koch. All rights reserved.

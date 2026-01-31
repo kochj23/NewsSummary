@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Observation
 
 //
 //  FavoritesManager.swift
@@ -8,15 +9,25 @@ import SwiftUI
 //  Manage favorite articles with persistence
 //  Author: Jordan Koch
 //  Date: 2026-01-26
+//  Updated: 2026-01-31 - Migrated to @Observable (Swift 5.9+)
 //
 
+/// Favorites manager using the modern @Observable macro
+///
+/// **Migration from ObservableObject:**
+/// - Replaced `ObservableObject` protocol with `@Observable` macro
+/// - Removed `@Published` property wrappers (automatic observation)
+/// - Views should use direct reference instead of `@ObservedObject`
+///
+/// **Requirements:** macOS 14+, iOS 17+, tvOS 17+
+@Observable
 @MainActor
-class FavoritesManager: ObservableObject {
+final class FavoritesManager {
 
     static let shared = FavoritesManager()
 
-    @Published var favorites: [NewsArticle] = []
-    @Published var favoriteIDs: Set<UUID> = []
+    var favorites: [NewsArticle] = []
+    var favoriteIDs: Set<UUID> = []
 
     private let fileURL: URL
 

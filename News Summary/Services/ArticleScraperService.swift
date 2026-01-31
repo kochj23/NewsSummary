@@ -1,5 +1,6 @@
 import Foundation
 import WebKit
+import Observation
 
 //
 //  ArticleScraperService.swift
@@ -8,14 +9,24 @@ import WebKit
 //  Web scraping service to extract full article content
 //  Author: Jordan Koch
 //  Date: 2026-01-26
+//  Updated: 2026-01-31 - Migrated to @Observable (Swift 5.9+)
 //
 
+/// Article scraper using the modern @Observable macro
+///
+/// **Migration from ObservableObject:**
+/// - Replaced `ObservableObject` protocol with `@Observable` macro
+/// - Removed `@Published` property wrappers
+/// - Already uses async/await (modern concurrency)
+///
+/// **Requirements:** macOS 14+, iOS 17+, tvOS 17+
+@Observable
 @MainActor
-class ArticleScraperService: ObservableObject {
+final class ArticleScraperService {
 
     static let shared = ArticleScraperService()
 
-    @Published var isScraping = false
+    var isScraping = false
     private var scrapedContent: [String: String] = [:] // URL -> content cache
 
     private init() {}

@@ -1,4 +1,5 @@
 import SwiftUI
+import Observation
 
 //
 //  ThemeManager.swift
@@ -7,15 +8,25 @@ import SwiftUI
 //  Dark/Light mode management with custom themes
 //  Author: Jordan Koch
 //  Date: 2026-01-26
+//  Updated: 2026-01-31 - Migrated to @Observable (Swift 5.9+)
 //
 
+/// Theme manager using the modern @Observable macro
+///
+/// **Migration from ObservableObject:**
+/// - Replaced `ObservableObject` protocol with `@Observable` macro
+/// - Removed `@Published` property wrappers (automatic observation)
+/// - Views should use `@State` or direct reference instead of `@StateObject`
+///
+/// **Requirements:** macOS 14+, iOS 17+, tvOS 17+
+@Observable
 @MainActor
-class ThemeManager: ObservableObject {
+final class ThemeManager {
 
     static let shared = ThemeManager()
 
-    @Published var currentTheme: AppTheme = .system
-    @Published var accentColor: Color = .cyan
+    var currentTheme: AppTheme = .system
+    var accentColor: Color = .cyan
 
     private init() {
         loadTheme()

@@ -10,7 +10,6 @@ import Foundation
 
 @MainActor
 class NewsAggregator: ObservableObject {
-    private let parser = RSSParser()
     private var cache: [NewsCategory: [NewsArticle]] = [:]
     private var cacheTimestamp: [NewsCategory: Date] = [:]
     private let cacheExpiration: TimeInterval = 3600  // 1 hour
@@ -36,10 +35,13 @@ class NewsAggregator: ObservableObject {
         }
 
         // Fetch from all sources in parallel
+        // Each task gets its own RSSParser instance to avoid thread-safety issues
+        // (RSSParser has mutable state used by XMLParserDelegate callbacks)
         let articles = await withTaskGroup(of: [NewsArticle].self) { group in
             for source in sources {
                 group.addTask {
-                    await self.parser.parseFeed(from: source.rssURL, source: source)
+                    let parser = RSSParser()
+                    return await parser.parseFeed(from: source.rssURL, source: source)
                 }
             }
 

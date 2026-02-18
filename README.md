@@ -571,3 +571,7 @@ If you're in crisis, help is available:
 | [GTNW](https://github.com/kochj23/GTNW) | Global Thermal Nuclear War strategy game |
 
 > **[View all projects](https://github.com/kochj23?tab=repositories)**
+
+---
+
+> **Disclaimer:** This is a personal project created on my own time. It is not affiliated with, endorsed by, or representative of my employer.

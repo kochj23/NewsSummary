@@ -555,3 +555,17 @@ If you're in crisis, help is available:
 **News Summary v2.2 - Where echo chambers go to die.**
 
 © 2026 Jordan Koch. All rights reserved.
+
+---
+
+## More Apps by Jordan Koch
+
+| App | Description |
+|-----|-------------|
+| [MailSummary](https://github.com/kochj23/MailSummary) | AI-powered email categorization and summarization |
+| [JiraSummary](https://github.com/kochj23/JiraSummary) | AI-powered Jira dashboard with sprint analytics |
+| [MLXCode](https://github.com/kochj23/MLXCode) | Local AI coding assistant for Apple Silicon |
+| [Blompie](https://github.com/kochj23/Blompie) | AI-powered text adventure game engine |
+| [GTNW](https://github.com/kochj23/GTNW) | Global Thermal Nuclear War strategy game |
+
+> **[View all projects](https://github.com/kochj23?tab=repositories)**

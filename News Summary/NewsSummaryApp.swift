@@ -73,6 +73,9 @@ struct NewsSummaryApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Force dark appearance for glassmorphic design
+        NSApp.appearance = NSAppearance(named: .darkAqua)
+
         // Initialize menu bar agent
         Task { @MainActor in
             NewsMenuBarAgent.shared.setup()
@@ -125,16 +128,29 @@ struct SettingsView: View {
     @AppStorage("RunInMenuBarOnly") private var runInMenuBarOnly = false
 
     var body: some View {
-        Form {
-            Section("Menu Bar") {
-                Toggle("Keep running in menu bar when window closes", isOn: $runInMenuBarOnly)
+        ZStack {
+            ModernColors.backgroundGradient
+                .ignoresSafeArea()
 
-                Text("Access breaking news and top headlines from your menu bar")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Settings")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle("Keep running in menu bar when window closes", isOn: $runInMenuBarOnly)
+                        .font(.system(size: 14, design: .rounded))
+                        .foregroundColor(ModernColors.textPrimary)
+
+                    Text("Access breaking news and top headlines from your menu bar")
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                }
+                .padding()
+                .compactGlassCard(cornerRadius: 16)
             }
+            .padding()
         }
-        .padding()
-        .frame(width: 400)
+        .frame(width: 450, height: 200)
     }
 }

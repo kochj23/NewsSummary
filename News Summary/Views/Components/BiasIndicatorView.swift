@@ -2,8 +2,9 @@
 //  BiasIndicatorView.swift
 //  News Summary
 //
-//  Compact bias indicator badge (L/C/R)
+//  Compact bias indicator badge (L/C/R) with glassmorphic styling
 //  Created by Jordan Koch on 2026-01-23
+//  Updated: 2026-02-17 - Glassmorphic design system
 //
 
 import SwiftUI
@@ -19,6 +20,7 @@ struct BiasIndicatorView: View {
             .background(
                 Circle()
                     .fill(bias.color)
+                    .shadow(color: bias.color.opacity(0.4), radius: 3)
             )
             .overlay(
                 Circle()
@@ -38,5 +40,5 @@ struct BiasIndicatorView: View {
         BiasIndicatorView(bias: .farRight)
     }
     .padding()
-    .background(Color.black)
+    .background(ModernColors.backgroundGradient)
 }

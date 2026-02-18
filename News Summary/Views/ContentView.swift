@@ -4,6 +4,7 @@
 //
 //  Main dashboard with category tabs and article feed
 //  Created by Jordan Koch on 2026-01-23
+//  Updated: 2026-02-17 - Glassmorphic design system
 //
 
 import SwiftUI
@@ -14,8 +15,8 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // Background
-            Color.black.ignoresSafeArea()
+            // Glassmorphic background
+            GlassmorphicBackground()
 
             VStack(spacing: 0) {
                 // Header
@@ -38,8 +39,10 @@ struct ContentView: View {
                 )
                 .padding(.top, 8)
 
-                Divider()
-                    .background(Color.cyan)
+                // Subtle divider
+                Rectangle()
+                    .fill(ModernColors.glassBorder)
+                    .frame(height: 1)
 
                 // Article feed
                 if newsEngine.isLoading {
@@ -62,30 +65,30 @@ struct ContentView: View {
 
     private var headerView: some View {
         HStack {
-            Text("📰 NEWS SUMMARY")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundColor(.cyan)
+            Text("NEWS SUMMARY")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(ModernColors.cyan)
 
             Spacer()
 
             // AI indicator
             HStack(spacing: 8) {
                 Circle()
-                    .fill(Color.green)
+                    .fill(ModernColors.accentGreen)
                     .frame(width: 10, height: 10)
+                    .shadow(color: ModernColors.accentGreen.opacity(0.6), radius: 4)
 
                 Text("AI Ready")
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.green)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundColor(ModernColors.accentGreen)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.white.opacity(0.05))
-            .cornerRadius(6)
+            .compactGlassCard(cornerRadius: 8)
 
             if newsEngine.isLoading {
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .cyan))
+                    .progressViewStyle(CircularProgressViewStyle(tint: ModernColors.cyan))
             }
 
             Button("Refresh") {
@@ -93,27 +96,25 @@ struct ContentView: View {
                     await newsEngine.refresh()
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.cyan)
+            .buttonStyle(ModernButtonStyle(color: ModernColors.cyan, style: .filled))
         }
         .padding()
-        .background(Color.black)
     }
 }
 
-/// Loading view
+/// Loading view with glassmorphic styling
 struct LoadingView: View {
     let message: String
 
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .cyan))
+                .progressViewStyle(CircularProgressViewStyle(tint: ModernColors.cyan))
                 .scaleEffect(2.0)
 
             Text(message)
-                .font(.headline)
-                .foregroundColor(.gray)
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundColor(ModernColors.textSecondary)
         }
         .frame(maxHeight: .infinity)
     }

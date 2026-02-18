@@ -2,8 +2,9 @@
 //  ArticleFeedView.swift
 //  News Summary
 //
-//  Scrollable feed of news articles
+//  Scrollable feed of news articles with glassmorphic design
 //  Created by Jordan Koch on 2026-01-23
+//  Updated: 2026-02-17 - Glassmorphic design system
 //
 
 import SwiftUI
@@ -36,7 +37,6 @@ struct ArticleFeedView: View {
             }
             .padding()
         }
-        .background(Color.black)
     }
 }
 
@@ -50,18 +50,18 @@ struct StoryGroupCard: View {
             // Header
             HStack {
                 Image(systemName: "doc.on.doc.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(ModernColors.orange)
+                    .shadow(color: ModernColors.orange.opacity(0.4), radius: 3)
 
                 Text("Same Story - \(group.sourceCount) Sources")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.orange)
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundColor(ModernColors.orange)
 
                 Spacer()
 
                 Text(group.biasDistribution)
-                    .font(.caption2)
-                    .foregroundColor(.gray)
+                    .font(.system(size: 11, design: .rounded))
+                    .foregroundColor(ModernColors.textTertiary)
             }
 
             // Representative article
@@ -74,8 +74,8 @@ struct StoryGroupCard: View {
             if group.articles.count > 1 {
                 HStack(spacing: 8) {
                     Text("Also on:")
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
 
                     ForEach(group.articles.dropFirst().prefix(3), id: \.id) { article in
                         Button(action: {
@@ -84,33 +84,25 @@ struct StoryGroupCard: View {
                             HStack(spacing: 4) {
                                 BiasIndicatorView(bias: article.source.bias)
                                 Text(article.source.name)
-                                    .font(.caption)
-                                    .foregroundColor(.cyan)
+                                    .font(.system(size: 12, design: .rounded))
+                                    .foregroundColor(ModernColors.cyan)
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.05))
-                            .cornerRadius(6)
+                            .compactGlassCard(cornerRadius: 8)
                         }
                         .buttonStyle(.plain)
                     }
 
                     if group.articles.count > 4 {
                         Text("+\(group.articles.count - 4) more")
-                            .font(.caption2)
-                            .foregroundColor(.gray)
+                            .font(.system(size: 11, design: .rounded))
+                            .foregroundColor(ModernColors.textTertiary)
                     }
                 }
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.orange.opacity(0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange, lineWidth: 2)
-                )
-        )
+        .compactGlassCard(cornerRadius: 20, borderColor: ModernColors.orange.opacity(0.4))
     }
 }

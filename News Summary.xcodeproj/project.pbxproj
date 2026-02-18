@@ -32,6 +32,7 @@
 		E34EEF15571F49D689CEAE70 /* AnalysisUnified.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EB2E4C6512BB31A504414C6 /* AnalysisUnified.swift */; };
 		F21184DC738AE4936528D782 /* ImageGenerationUnified.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0615D59184EF108C05CCB43 /* ImageGenerationUnified.swift */; };
 		980FC49148992C6556FBC2F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0050051F2E1B40931A96E0C0 /* Assets.xcassets */; };
+		DD0000000000000000000001 /* ModernDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0000000000000000000002 /* ModernDesign.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		D6E9D972E56D38935D5710C5 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		F93751979DE1FCBB51376B6E /* NewsCategory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NewsCategory.swift; path = "News Summary/Models/NewsCategory.swift"; sourceTree = "<group>"; };
 		0050051F2E1B40931A96E0C0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DD0000000000000000000002 /* ModernDesign.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ModernDesign.swift; path = "News Summary/Design/ModernDesign.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +134,7 @@
 				A90CB48BB015E00B0AF2137D /* ArticleCard.swift */,
 				727B6E1C64D6DFBDB54204B0 /* BiasIndicatorView.swift */,
 				2C8F22F93D073B1AD7A0BFC3 /* BreakingNewsBanner.swift */,
+				DD0000000000000000000002 /* ModernDesign.swift */,
 				9F2D76936BF864A1D1817042 /* AICapabilities */,
 			);
 			name = "News Summary";
@@ -231,6 +234,7 @@
 				8E04E7B941002E19E8DE711D /* VoiceUnified.swift in Sources */,
 				E34EEF15571F49D689CEAE70 /* AnalysisUnified.swift in Sources */,
 				74456A13B45D2930463AEBC5 /* SecurityUnified.swift in Sources */,
+				DD0000000000000000000001 /* ModernDesign.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

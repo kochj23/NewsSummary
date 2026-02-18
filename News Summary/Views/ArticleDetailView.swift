@@ -3,7 +3,9 @@
 //  News Summary
 //
 //  Full article viewer with AI summary and bias information
+//  Glassmorphic design matching TopGUI/RsyncGUI
 //  Created by Jordan Koch on 2026-01-23
+//  Updated: 2026-02-17 - Glassmorphic design system
 //
 
 import SwiftUI
@@ -15,50 +17,61 @@ struct ArticleDetailView: View {
     @Environment(\.openURL) var openURL
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            headerView
+        ZStack {
+            // Glassmorphic background
+            GlassmorphicBackground()
 
-            Divider()
-                .background(article.category.color)
-                .frame(height: 2)
+            VStack(spacing: 0) {
+                // Header
+                headerView
 
-            // Content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    // AI Summary
-                    if let summary = article.fullSummary {
-                        summarySection(summary)
-                    } else if let description = article.rssDescription {
-                        descriptionSection(description)
+                // Category color accent line
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [article.category.color, article.category.color.opacity(0.3)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 2)
+                    .shadow(color: article.category.color.opacity(0.5), radius: 4)
+
+                // Content
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // AI Summary
+                        if let summary = article.fullSummary {
+                            summarySection(summary)
+                        } else if let description = article.rssDescription {
+                            descriptionSection(description)
+                        }
+
+                        // Key points
+                        if let keyPoints = article.keyPoints {
+                            keyPointsSection(keyPoints)
+                        }
+
+                        // Full article content (if scraped)
+                        if let content = article.scrapedContent {
+                            fullContentSection(content)
+                        }
+
+                        // Action buttons
+                        actionButtons
                     }
-
-                    // Key points
-                    if let keyPoints = article.keyPoints {
-                        keyPointsSection(keyPoints)
-                    }
-
-                    // Full article content (if scraped)
-                    if let content = article.scrapedContent {
-                        fullContentSection(content)
-                    }
-
-                    // Action buttons
-                    actionButtons
+                    .padding()
                 }
-                .padding()
             }
-            .background(Color.black)
         }
         .frame(width: 900, height: 700)
-        .background(Color.black)
-        .cornerRadius(12)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(article.category.color, lineWidth: 3)
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(article.category.color.opacity(0.4), lineWidth: 2)
         )
+        .shadow(color: article.category.color.opacity(0.2), radius: 20)
         .onAppear {
-            // Mark as read
             newsEngine.markAsRead(articleId: article.id)
         }
     }
@@ -74,15 +87,12 @@ struct ArticleDetailView: View {
                     BiasIndicatorView(bias: article.source.bias)
 
                     Text(article.source.name)
-                        .font(.body)
-                        .foregroundColor(.cyan)
-
-                    Text("●")
-                        .foregroundColor(credibilityColor)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundColor(ModernColors.cyan)
 
                     Text("\(article.source.credibility)")
-                        .font(.caption)
-                        .foregroundColor(credibilityColor)
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(ModernColors.credibilityColor(article.source.credibility))
                 }
 
                 Spacer()
@@ -91,34 +101,33 @@ struct ArticleDetailView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.red)
+                        .foregroundColor(ModernColors.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
 
             // Title
             Text(article.title)
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundColor(ModernColors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             // Date and category
             HStack {
                 Text(formatFullDate(article.publishedDate))
-                    .font(.caption)
-                    .foregroundColor(.gray)
-
-                Text("●")
-                    .foregroundColor(.gray.opacity(0.5))
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(ModernColors.textTertiary)
 
                 HStack(spacing: 4) {
                     Image(systemName: article.category.icon)
-                        .font(.caption2)
+                        .font(.system(size: 11))
                     Text(article.category.displayName)
-                        .font(.caption)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
                 }
                 .foregroundColor(article.category.color)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .compactGlassCard(cornerRadius: 6, borderColor: article.category.color.opacity(0.3))
 
                 Spacer()
             }
@@ -132,108 +141,94 @@ struct ArticleDetailView: View {
             }
         }
         .padding()
-        .background(Color.black)
     }
 
     private func summarySection(_ summary: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "brain.head.profile")
-                    .foregroundColor(.cyan)
+                    .foregroundColor(ModernColors.cyan)
+                    .shadow(color: ModernColors.cyan.opacity(0.4), radius: 3)
 
                 Text("AI SUMMARY")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
             }
 
             Text(summary)
-                .font(.body)
-                .foregroundColor(.white.opacity(0.9))
+                .font(.system(size: 14, design: .rounded))
+                .foregroundColor(ModernColors.textPrimary.opacity(0.9))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.cyan.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.cyan, lineWidth: 1)
-                )
-        )
+        .compactGlassCard(cornerRadius: 16, borderColor: ModernColors.cyan.opacity(0.3))
     }
 
     private func descriptionSection(_ description: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("DESCRIPTION")
-                .font(.headline)
-                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundColor(ModernColors.textPrimary)
 
             Text(description)
-                .font(.body)
-                .foregroundColor(.gray)
+                .font(.system(size: 14, design: .rounded))
+                .foregroundColor(ModernColors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(12)
+        .compactGlassCard(cornerRadius: 16)
     }
 
     private func keyPointsSection(_ keyPoints: [String]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "list.bullet")
-                    .foregroundColor(.orange)
+                    .foregroundColor(ModernColors.orange)
+                    .shadow(color: ModernColors.orange.opacity(0.4), radius: 3)
 
                 Text("KEY POINTS")
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
             }
 
             ForEach(keyPoints, id: \.self) { point in
                 HStack(alignment: .top, spacing: 8) {
                     Circle()
-                        .fill(Color.orange)
+                        .fill(ModernColors.orange)
                         .frame(width: 6, height: 6)
                         .padding(.top, 6)
+                        .shadow(color: ModernColors.orange.opacity(0.4), radius: 2)
 
                     Text(point)
-                        .font(.body)
-                        .foregroundColor(.white.opacity(0.9))
+                        .font(.system(size: 14, design: .rounded))
+                        .foregroundColor(ModernColors.textPrimary.opacity(0.9))
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.orange.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange, lineWidth: 1)
-                )
-        )
+        .compactGlassCard(cornerRadius: 16, borderColor: ModernColors.orange.opacity(0.3))
     }
 
     private func fullContentSection(_ content: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("FULL ARTICLE")
-                .font(.headline)
-                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundColor(ModernColors.textPrimary)
 
             Text(content.prefix(2000))
-                .font(.body)
-                .foregroundColor(.white.opacity(0.8))
+                .font(.system(size: 14, design: .rounded))
+                .foregroundColor(ModernColors.textPrimary.opacity(0.8))
                 .fixedSize(horizontal: false, vertical: true)
 
             if content.count > 2000 {
                 Text("[Article truncated for display]")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(ModernColors.textTertiary)
             }
         }
         .padding()
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(12)
+        .compactGlassCard(cornerRadius: 16)
     }
 
     private var actionButtons: some View {
@@ -242,25 +237,19 @@ struct ArticleDetailView: View {
                 openURL(article.url)
             }) {
                 Label("Read Full Article", systemImage: "safari")
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.cyan)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(ModernButtonStyle(color: ModernColors.cyan, style: .filled))
 
             Button(action: {
                 newsEngine.toggleFavorite(articleId: article.id)
             }) {
                 Label(article.isFavorite ? "Favorited" : "Favorite",
                       systemImage: article.isFavorite ? "star.fill" : "star")
-                    .padding()
-                    .background(Color.white.opacity(0.1))
-                    .foregroundColor(article.isFavorite ? .yellow : .white)
-                    .cornerRadius(8)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(ModernButtonStyle(
+                color: article.isFavorite ? ModernColors.yellow : ModernColors.textSecondary,
+                style: article.isFavorite ? .filled : .glass
+            ))
         }
     }
 
@@ -272,17 +261,9 @@ struct ArticleDetailView: View {
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
-
-    private var credibilityColor: Color {
-        let cred = article.source.credibility
-        if cred >= 90 { return .green }
-        if cred >= 75 { return .yellow }
-        if cred >= 60 { return .orange }
-        return .red
-    }
 }
 
-/// Simple bias spectrum bar
+/// Bias spectrum bar with glassmorphic design
 struct BiasSpectrumBar: View {
     let bias: BiasSpectrum
     let confidence: Double
@@ -290,17 +271,16 @@ struct BiasSpectrumBar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Political Bias: \(bias.rawValue) (\(Int(confidence * 100))% confidence)")
-                .font(.caption)
-                .foregroundColor(.white)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(ModernColors.textSecondary)
 
             // Visual spectrum
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     // Background bar
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(ModernColors.glassBackground)
                         .frame(height: 8)
-                        .cornerRadius(4)
 
                     // Gradient overlay
                     LinearGradient(
@@ -313,7 +293,7 @@ struct BiasSpectrumBar: View {
                     .opacity(0.5)
 
                     // Indicator
-                    let position = (bias.value + 2.0) / 4.0  // Normalize -2 to +2 → 0 to 1
+                    let position = (bias.value + 2.0) / 4.0  // Normalize -2 to +2 -> 0 to 1
                     Circle()
                         .fill(bias.color)
                         .frame(width: 20, height: 20)
@@ -321,6 +301,7 @@ struct BiasSpectrumBar: View {
                             Circle()
                                 .stroke(Color.white, lineWidth: 2)
                         )
+                        .shadow(color: bias.color.opacity(0.5), radius: 4)
                         .offset(x: geometry.size.width * position - 10, y: -6)
                 }
             }
@@ -328,7 +309,6 @@ struct BiasSpectrumBar: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal)
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(8)
+        .compactGlassCard(cornerRadius: 10)
     }
 }

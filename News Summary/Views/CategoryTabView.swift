@@ -2,8 +2,9 @@
 //  CategoryTabView.swift
 //  News Summary
 //
-//  Horizontal category selector tabs
+//  Horizontal category selector tabs with glassmorphic styling
 //  Created by Jordan Koch on 2026-01-23
+//  Updated: 2026-02-17 - Glassmorphic design system
 //
 
 import SwiftUI
@@ -31,11 +32,10 @@ struct CategoryTabView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
         }
-        .background(Color.black)
     }
 }
 
-/// Individual category tab
+/// Individual category tab with glassmorphic design
 private struct CategoryTab: View {
     let category: NewsCategory
     let count: Int
@@ -47,30 +47,40 @@ private struct CategoryTab: View {
             VStack(spacing: 6) {
                 Image(systemName: category.icon)
                     .font(.title2)
-                    .foregroundColor(isSelected ? category.color : .gray)
+                    .foregroundColor(isSelected ? category.color : ModernColors.textTertiary)
+                    .shadow(color: isSelected ? category.color.opacity(0.5) : .clear, radius: 4)
 
                 Text(category.displayName.uppercased())
-                    .font(.caption)
-                    .fontWeight(isSelected ? .bold : .regular)
-                    .foregroundColor(isSelected ? .white : .gray)
+                    .font(.system(size: 11, weight: isSelected ? .bold : .medium, design: .rounded))
+                    .foregroundColor(isSelected ? ModernColors.textPrimary : ModernColors.textTertiary)
 
                 if count > 0 {
                     Text("\(count)")
-                        .font(.caption2)
-                        .foregroundColor(isSelected ? category.color : .gray.opacity(0.7))
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundColor(isSelected ? category.color : ModernColors.textTertiary)
                 }
             }
             .frame(width: 90)
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? category.color.opacity(0.2) : Color.white.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? category.color : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? category.color.opacity(0.15) : ModernColors.glassBackground)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(.ultraThinMaterial)
+                            .opacity(isSelected ? 0.9 : 0.7)
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                isSelected ? category.color.opacity(0.5) : ModernColors.glassBorder,
+                                lineWidth: isSelected ? 2 : 1
+                            )
+                    )
+                    .shadow(color: isSelected ? category.color.opacity(0.2) : .clear, radius: 6)
             )
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
         }
         .buttonStyle(.plain)
     }

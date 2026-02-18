@@ -11,6 +11,9 @@
 
 ---
 
+![News Summary](Screenshots/main-window.png)
+
+
 ## 🏆 Why News Summary Matters
 
 **The Problem:** News today is:

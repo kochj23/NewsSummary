@@ -44,6 +44,7 @@ struct ArticleFeedView: View {
 struct StoryGroupCard: View {
     let group: StoryGroup
     let onSelectArticle: (NewsArticle) -> Void
+    @State private var showShareCard = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -58,6 +59,18 @@ struct StoryGroupCard: View {
                     .foregroundColor(ModernColors.orange)
 
                 Spacer()
+
+                // Share card button
+                Button(action: { showShareCard = true }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 12))
+                        .foregroundColor(ModernColors.purple)
+                }
+                .buttonStyle(.plain)
+                .help("Generate share card")
+                .sheet(isPresented: $showShareCard) {
+                    ShareCardPreviewSheet(storyGroup: group)
+                }
 
                 Text(group.biasDistribution)
                     .font(.system(size: 11, design: .rounded))

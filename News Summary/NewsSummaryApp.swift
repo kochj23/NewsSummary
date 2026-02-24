@@ -9,6 +9,7 @@
 
 import SwiftUI
 import UserNotifications
+import WidgetKit
 
 @main
 struct NewsSummaryApp: App {
@@ -65,7 +66,93 @@ struct NewsSummaryApp: App {
             headlines: Array(headlines)
         )
         menuBarAgent.lastRefreshTime = Date()
+
+        // Push data to widgets
+        updateWidgetData()
     }
+
+    private func updateWidgetData() {
+        let suiteName = "group.com.jordankoch.NewsSummary"
+        guard let userDefaults = UserDefaults(suiteName: suiteName) else { return }
+
+        // Push bias exposure data for BiasExposureWidget
+        if let metrics = ReadingAnalytics.shared.biasExposureMetrics {
+            let echoStatus = ReadingAnalytics.shared.detectEchoChamber()
+            let biasData = BiasExposureWidgetData(
+                diversityScore: metrics.diversityScore,
+                echoStatus: echoStatus.description,
+                leftPercentage: metrics.leftPercentage,
+                centerPercentage: metrics.centerPercentage,
+                rightPercentage: metrics.rightPercentage,
+                averageBias: metrics.averageBias,
+                articlesAnalyzed: metrics.sampleSize,
+                recommendation: metrics.recommendation
+            )
+            if let encoded = try? JSONEncoder().encode(biasData) {
+                userDefaults.set(encoded, forKey: "biasExposureData")
+            }
+        }
+
+        // Push enhanced headline data with bias labels
+        let widgetHeadlines = newsEngine.breakingNews.prefix(10).map { article in
+            WidgetHeadlineData(
+                id: article.id.uuidString,
+                title: article.title,
+                source: article.source.name,
+                category: article.category.rawValue,
+                publishedAt: article.publishedDate,
+                imageURL: article.imageURL?.absoluteString,
+                isBreaking: article.isBreakingNews,
+                biasLabel: article.source.bias.shortLabel,
+                biasColorHex: article.source.bias.hexColor
+            )
+        }
+
+        let widgetData = WidgetBundleData(
+            breakingNewsCount: newsEngine.breakingNews.count,
+            topHeadlines: Array(widgetHeadlines),
+            categoryCounts: newsEngine.articles.reduce(into: [String: Int]()) { $0[$1.key.rawValue] = $1.value.count },
+            lastUpdated: Date()
+        )
+
+        if let encoded = try? JSONEncoder().encode(widgetData) {
+            userDefaults.set(encoded, forKey: "widgetData")
+        }
+
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+}
+
+// MARK: - Widget Data Models (main app side)
+
+private struct BiasExposureWidgetData: Codable {
+    let diversityScore: Double
+    let echoStatus: String
+    let leftPercentage: Double
+    let centerPercentage: Double
+    let rightPercentage: Double
+    let averageBias: Double
+    let articlesAnalyzed: Int
+    let recommendation: String
+}
+
+private struct WidgetHeadlineData: Codable {
+    let id: String
+    let title: String
+    let source: String
+    let category: String
+    let publishedAt: Date
+    let imageURL: String?
+    let isBreaking: Bool
+    let biasLabel: String?
+    let biasColorHex: String?
+}
+
+private struct WidgetBundleData: Codable {
+    let breakingNewsCount: Int
+    let topHeadlines: [WidgetHeadlineData]
+    let categoryCounts: [String: Int]
+    let lastUpdated: Date?
 }
 
 // MARK: - App Delegate
@@ -121,11 +208,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 }
 
-// MARK: - Settings View (Placeholder)
+// MARK: - Settings View
 
 struct SettingsView: View {
     @EnvironmentObject var newsEngine: NewsEngine
     @AppStorage("RunInMenuBarOnly") private var runInMenuBarOnly = false
+    @ObservedObject private var sourceManager = CustomSourceManager.shared
+    @State private var showCustomSources = false
 
     var body: some View {
         ZStack {
@@ -137,6 +226,7 @@ struct SettingsView: View {
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundColor(ModernColors.textPrimary)
 
+                // Menu Bar
                 VStack(alignment: .leading, spacing: 12) {
                     Toggle("Keep running in menu bar when window closes", isOn: $runInMenuBarOnly)
                         .font(.system(size: 14, design: .rounded))
@@ -148,9 +238,36 @@ struct SettingsView: View {
                 }
                 .padding()
                 .compactGlassCard(cornerRadius: 16)
+
+                // Custom RSS Sources
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Custom RSS Sources")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(ModernColors.textPrimary)
+
+                            Text("\(sourceManager.customSources.count) custom sources configured")
+                                .font(.system(size: 12, design: .rounded))
+                                .foregroundColor(ModernColors.textTertiary)
+                        }
+
+                        Spacer()
+
+                        Button(action: { showCustomSources = true }) {
+                            Label("Manage", systemImage: "antenna.radiowaves.left.and.right")
+                        }
+                        .buttonStyle(ModernButtonStyle(color: ModernColors.cyan, style: .outlined))
+                    }
+                }
+                .padding()
+                .compactGlassCard(cornerRadius: 16)
             }
             .padding()
         }
-        .frame(width: 450, height: 200)
+        .frame(width: 500, height: 300)
+        .sheet(isPresented: $showCustomSources) {
+            CustomSourcesView()
+        }
     }
 }

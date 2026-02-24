@@ -56,6 +56,17 @@ enum BiasSpectrum: String, Codable, CaseIterable {
         }
     }
 
+    /// Hex color string for cross-process use (e.g., widgets)
+    var hexColor: String {
+        switch self {
+        case .farLeft, .left: return "#0000FF"
+        case .centerLeft: return "#9980E6"
+        case .center: return "#808080"
+        case .centerRight: return "#E68099"
+        case .right, .farRight: return "#FF0000"
+        }
+    }
+
     /// Create BiasSpectrum from numeric value
     static func from(value: Double) -> BiasSpectrum {
         switch value {

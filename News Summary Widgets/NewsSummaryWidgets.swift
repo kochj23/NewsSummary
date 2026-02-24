@@ -28,6 +28,21 @@ struct WidgetHeadline: Identifiable, Codable {
     let publishedAt: Date
     let imageURL: String?
     let isBreaking: Bool
+    let biasLabel: String?         // "FL", "L", "CL", "C", "CR", "R", "FR"
+    let biasColorHex: String?      // Hex color for bias indicator
+
+    // Backward compatible init (existing code won't break)
+    init(id: String, title: String, source: String, category: String, publishedAt: Date, imageURL: String?, isBreaking: Bool, biasLabel: String? = nil, biasColorHex: String? = nil) {
+        self.id = id
+        self.title = title
+        self.source = source
+        self.category = category
+        self.publishedAt = publishedAt
+        self.imageURL = imageURL
+        self.isBreaking = isBreaking
+        self.biasLabel = biasLabel
+        self.biasColorHex = biasColorHex
+    }
 }
 
 // MARK: - Timeline Provider
@@ -88,6 +103,16 @@ class NewsWidgetDataStore {
         let topHeadlines: [WidgetHeadline]
         let categoryCounts: [String: Int]
         let lastUpdated: Date?
+        let biasExposure: BiasExposureData?  // Optional for backward compat
+
+        // Backward compatible init
+        init(breakingNewsCount: Int, topHeadlines: [WidgetHeadline], categoryCounts: [String: Int], lastUpdated: Date?, biasExposure: BiasExposureData? = nil) {
+            self.breakingNewsCount = breakingNewsCount
+            self.topHeadlines = topHeadlines
+            self.categoryCounts = categoryCounts
+            self.lastUpdated = lastUpdated
+            self.biasExposure = biasExposure
+        }
     }
 
     func loadData() -> WidgetData {
@@ -311,6 +336,17 @@ struct HeadlineRow: View {
                     .lineLimit(2)
 
                 HStack(spacing: 4) {
+                    // Bias badge
+                    if let biasLabel = headline.biasLabel {
+                        Text(biasLabel)
+                            .font(.system(size: 7, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 14, height: 14)
+                            .background(
+                                Circle().fill(colorFromHex(headline.biasColorHex))
+                            )
+                    }
+
                     Text(headline.source)
                         .font(.caption2)
                         .foregroundColor(.secondary)
@@ -332,6 +368,19 @@ struct HeadlineRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+
+    /// Convert hex string to Color for widget rendering
+    private func colorFromHex(_ hex: String?) -> Color {
+        guard let hex = hex?.trimmingCharacters(in: CharacterSet(charactersIn: "#")),
+              hex.count == 6,
+              let rgbValue = UInt64(hex, radix: 16) else {
+            return .gray
+        }
+        let r = Double((rgbValue >> 16) & 0xFF) / 255.0
+        let g = Double((rgbValue >> 8) & 0xFF) / 255.0
+        let b = Double(rgbValue & 0xFF) / 255.0
+        return Color(red: r, green: g, blue: b)
     }
 }
 
@@ -362,6 +411,7 @@ struct NewsSummaryWidgetBundle: WidgetBundle {
     var body: some Widget {
         BreakingNewsWidget()
         HeadlinesWidget()
+        BiasExposureWidget()
     }
 }
 

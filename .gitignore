@@ -1,0 +1,33 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# User-specific
+xcuserdata/
+*.xcuserdatad
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+
+# CocoaPods / SPM
+Pods/
+.build/
+
+# Secrets
+*.p12
+*.cer
+*.mobileprovision
+.env
+secrets.json
+credentials.json

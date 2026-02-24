@@ -15,6 +15,7 @@ struct ArticleDetailView: View {
     @ObservedObject var newsEngine: NewsEngine
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
+    @State private var showShareCard = false
 
     var body: some View {
         ZStack {
@@ -250,6 +251,14 @@ struct ArticleDetailView: View {
                 color: article.isFavorite ? ModernColors.yellow : ModernColors.textSecondary,
                 style: article.isFavorite ? .filled : .glass
             ))
+
+            Button(action: { showShareCard = true }) {
+                Label("Share Bias Card", systemImage: "square.and.arrow.up")
+            }
+            .buttonStyle(ModernButtonStyle(color: ModernColors.purple, style: .glass))
+            .sheet(isPresented: $showShareCard) {
+                ShareCardPreviewSheet(article: article)
+            }
         }
     }
 

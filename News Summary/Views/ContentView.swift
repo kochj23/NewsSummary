@@ -12,6 +12,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var newsEngine: NewsEngine
     @State private var selectedArticle: NewsArticle?
+    @State private var showCustomSources = false
 
     var body: some View {
         ZStack {
@@ -61,6 +62,9 @@ struct ContentView: View {
         .sheet(item: $selectedArticle) { article in
             ArticleDetailView(article: article, newsEngine: newsEngine)
         }
+        .sheet(isPresented: $showCustomSources) {
+            CustomSourcesView()
+        }
     }
 
     private var headerView: some View {
@@ -90,6 +94,11 @@ struct ContentView: View {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: ModernColors.cyan))
             }
+
+            Button(action: { showCustomSources = true }) {
+                Label("Sources", systemImage: "plus.circle")
+            }
+            .buttonStyle(ModernButtonStyle(color: ModernColors.purple, style: .glass))
 
             Button("Refresh") {
                 Task {

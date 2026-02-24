@@ -26,8 +26,9 @@ class NewsAggregator: ObservableObject {
             return cached
         }
 
-        // Get sources for category
+        // Get sources for category (built-in + user custom sources)
         var sources = NewsSourceDatabase.sources(for: category)
+        sources.append(contentsOf: CustomSourceManager.shared.sources(for: category))
 
         // Add local news if category is local and location is set
         if category == .local, let location = userLocation {

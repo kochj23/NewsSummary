@@ -168,7 +168,7 @@ Power user productivity:
 
 **Why It Matters:** Keyboard > mouse. 10x faster workflow.
 
-#### 12. **Dark/Light/OLED Themes**
+#### 12. **Dark/Light/OLED (Organic Light-Emitting Diode) Themes**
 4 beautiful themes:
 - Light (bright environments)
 - Dark (low light)
@@ -207,7 +207,7 @@ Comprehensive insights:
 
 **Why It Matters:** Can't improve what you don't measure. Self-awareness prevents echo chambers.
 
-#### 16. **Image Caching (LRU)**
+#### 16. **Image Caching (LRU (Least Recently Used))**
 Smart image management:
 - 500 MB cache with LRU eviction
 - Memory + disk caching
@@ -218,7 +218,7 @@ Smart image management:
 #### 17. **Full Article Scraping**
 Extract complete article text:
 - Multiple scraping strategies
-- HTML parsing
+- HTML (Hypertext Markup Language) parsing
 - Smart content extraction
 
 **Why It Matters:** Read full articles without leaving the app. Complete context.
@@ -236,8 +236,8 @@ Save and organize favorite articles:
 ## ☁️ AI Backend Support (10 Backends)
 
 ### Local (Free & Private):
-- **Ollama** - Fast, GPU-accelerated
-- **MLX** - Apple Silicon optimized
+- **Ollama** - Fast, GPU (Graphics Processing Unit)-accelerated
+- **MLX (Machine Learning eXtensions)** - Apple Silicon optimized
 - **TinyLLM** - Lightweight Docker
 - **TinyChat** - Fast chatbot interface
 - **OpenWebUI** - Self-hosted platform
@@ -269,7 +269,7 @@ Save and organize favorite articles:
 - Automatic blocking
 - Violation logging
 - Crisis resource referrals (988, 741741, etc.)
-- Legal compliance (CSAM reporting)
+- Legal compliance (CSAM (Child Sexual Abuse Material) reporting)
 
 **Privacy:** All processing can be 100% local. No cloud required.
 
@@ -317,7 +317,7 @@ Save and organize favorite articles:
 
 ### Installation:
 ```bash
-# Download latest DMG from releases
+# Download latest DMG (Disk Image) from releases
 open NewsSummary-v2.2.0.dmg
 
 # Or build from source
@@ -348,7 +348,7 @@ cp -R build/Release/"News Summary.app" ~/Applications/
 
 ## 📊 Features Comparison
 
-| Feature | News Summary | Ground News | Apple News | RSS Readers |
+| Feature | News Summary | Ground News | Apple News | RSS (Really Simple Syndication) Readers |
 |---------|--------------|-------------|------------|-------------|
 | Multi-Perspective Analysis | ✅ Comprehensive | ❌ | ❌ | ❌ |
 | Content Bias Detection | ✅ AI-powered | ❌ | ❌ | ❌ |

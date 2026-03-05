@@ -19,7 +19,7 @@ extension AIBackendManager {
     func generateWithFallback(
         prompt: String,
         systemPrompt: String? = nil,
-        temperature: Float = 0.7,
+        temperature: Double = 0.7,
         maxTokens: Int = 2048
     ) async throws -> String {
 
@@ -43,7 +43,7 @@ extension AIBackendManager {
                     await MainActor.run {
                         sendNotification(
                             title: "Backend Fallback",
-                            message: "Switched to \(backend.rawValue) after \(previousBackend?.rawValue ?? "unknown") failed"
+                            message: "Switched to \(backend.rawValue) after \(previousBackend.rawValue) failed"
                         )
                     }
                 }
@@ -63,7 +63,8 @@ extension AIBackendManager {
         var backends: [AIBackend] = []
 
         // Start with currently selected
-        if let active = activeBackend, isBackendAvailable(active) {
+        let active = activeBackend
+        if isBackendAvailable(active) {
             backends.append(active)
         }
 
@@ -97,31 +98,19 @@ extension AIBackendManager {
 
     // MARK: - Connection Testing
 
-    @Published var connectionTestResults: [AIBackend: ConnectionTestResult] = [:]
-
-    struct ConnectionTestResult {
-        let success: Bool
-        let responseTime: TimeInterval?
-        let error: String?
-        let timestamp: Date
-    }
-
     func testConnection(for backend: AIBackend) async -> ConnectionTestResult {
         let startTime = Date()
 
         do {
-            // Save current backend
             let previousBackend = activeBackend
             activeBackend = backend
 
-            // Try a simple test prompt
             _ = try await generate(
                 prompt: "Say 'hello' in one word",
                 temperature: 0.1,
                 maxTokens: 10
             )
 
-            // Restore previous backend
             activeBackend = previousBackend
 
             let responseTime = Date().timeIntervalSince(startTime)
@@ -164,28 +153,6 @@ extension AIBackendManager {
 
     // MARK: - Usage Tracking
 
-    @Published var usageStats: [AIBackend: UsageStats] = [:]
-
-    struct UsageStats: Codable {
-        var totalTokens: Int = 0
-        var totalRequests: Int = 0
-        var totalCost: Double = 0.0 // USD
-        var averageResponseTime: Double = 0.0 // seconds
-        var lastUsed: Date?
-
-        mutating func recordUsage(tokens: Int, cost: Double, responseTime: TimeInterval) {
-            totalTokens += tokens
-            totalRequests += 1
-            totalCost += cost
-
-            // Update running average
-            let totalTime = averageResponseTime * Double(totalRequests - 1) + responseTime
-            averageResponseTime = totalTime / Double(totalRequests)
-
-            lastUsed = Date()
-        }
-    }
-
     func recordUsage(backend: AIBackend, tokens: Int, responseTime: TimeInterval) {
         let cost = estimateCost(backend: backend, tokens: tokens)
 
@@ -197,15 +164,14 @@ extension AIBackendManager {
     }
 
     private func estimateCost(backend: AIBackend, tokens: Int) -> Double {
-        // Rough cost estimates per 1M tokens
         let costPerMillion: Double = {
             switch backend {
-            case .openAI: return 10.0 // GPT-4o
+            case .openAI: return 10.0
             case .googleCloud: return 7.0
             case .azureCognitive: return 10.0
             case .awsAI: return 8.0
             case .ibmWatson: return 12.0
-            case .ollama, .mlx, .tinyLLM, .tinyChat, .openWebUI: return 0.0 // Free/local
+            case .ollama, .mlx, .tinyLLM, .tinyChat, .openWebUI: return 0.0
             }
         }()
 
@@ -213,7 +179,6 @@ extension AIBackendManager {
     }
 
     private func saveUsageStats() {
-        // Save to UserDefaults (should migrate to file-based storage for large datasets)
         if let data = try? JSONEncoder().encode(usageStats) {
             UserDefaults.standard.set(data, forKey: "AIBackend_UsageStats")
         }
@@ -227,42 +192,6 @@ extension AIBackendManager {
     }
 
     // MARK: - Performance Metrics
-
-    @Published var performanceMetrics: [AIBackend: PerformanceMetrics] = [:]
-
-    struct PerformanceMetrics {
-        var averageLatency: TimeInterval = 0.0
-        var successRate: Double = 0.0
-        var totalAttempts: Int = 0
-        var successfulAttempts: Int = 0
-        var failedAttempts: Int = 0
-        var lastResponseTime: TimeInterval?
-        var lastSuccess: Date?
-        var lastFailure: Date?
-
-        mutating func recordSuccess(responseTime: TimeInterval) {
-            totalAttempts += 1
-            successfulAttempts += 1
-            lastResponseTime = responseTime
-            lastSuccess = Date()
-
-            // Update running average
-            let totalTime = averageLatency * Double(successfulAttempts - 1) + responseTime
-            averageLatency = totalTime / Double(successfulAttempts)
-
-            // Calculate success rate
-            successRate = Double(successfulAttempts) / Double(totalAttempts)
-        }
-
-        mutating func recordFailure() {
-            totalAttempts += 1
-            failedAttempts += 1
-            lastFailure = Date()
-
-            // Recalculate success rate
-            successRate = Double(successfulAttempts) / Double(totalAttempts)
-        }
-    }
 
     func recordPerformance(backend: AIBackend, success: Bool, responseTime: TimeInterval?) {
         var metrics = performanceMetrics[backend] ?? PerformanceMetrics()
@@ -278,23 +207,22 @@ extension AIBackendManager {
 
     // MARK: - Notification System
 
-    private func sendNotification(title: String, message: String) {
-        // For macOS, use NSUserNotification or UNUserNotificationCenter
-        // This is a simplified version
+    func sendNotification(title: String, message: String) {
         #if os(macOS)
-        let notification = NSUserNotification()
-        notification.title = title
-        notification.informativeText = message
-        notification.soundName = NSUserNotificationDefaultSoundName
-        NSUserNotificationCenter.default.deliver(notification)
+        // Use UserNotifications framework instead of deprecated NSUserNotification
+        let center = UNUserNotificationCenter.current()
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = message
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        center.add(request)
         #endif
 
-        print("📢 \(title): \(message)")
+        print("[AIBackend] \(title): \(message)")
     }
 
     // MARK: - Background Monitoring
-
-    private var monitoringTimer: Timer?
 
     func startBackgroundMonitoring(interval: TimeInterval = 60.0) {
         stopBackgroundMonitoring()
@@ -307,7 +235,6 @@ extension AIBackendManager {
                 await self.refreshAllBackends()
                 let currentAvailability = self.collectAvailabilitySnapshot()
 
-                // Notify of changes
                 self.notifyAvailabilityChanges(from: previousAvailability, to: currentAvailability)
             }
         }
@@ -346,13 +273,13 @@ extension AIBackendManager {
 
 #if os(macOS)
 import AppKit
+import UserNotifications
 
 extension AIBackendManager {
 
     /// Register global keyboard shortcuts for backend switching
     func registerKeyboardShortcuts() {
-        // ⌘1-⌘9 for quick backend switching
-        let shortcuts: [(Int, AIBackend)] = [
+        let _: [(Int, AIBackend)] = [
             (1, .ollama),
             (2, .openAI),
             (3, .mlx),
@@ -364,9 +291,7 @@ extension AIBackendManager {
             (9, .openWebUI)
         ]
 
-        // Note: Actual implementation would use NSEvent.addLocalMonitorForEvents
-        // This is a placeholder for the concept
-        print("⌨️ Keyboard shortcuts registered: ⌘1-⌘9 for backend switching")
+        print("[AIBackend] Keyboard shortcuts registered")
     }
 }
 #endif

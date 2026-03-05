@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import SwiftUI
 
 //
@@ -74,7 +75,70 @@ class AIBackendManager: ObservableObject {
 
     // MARK: - Backend Enum
 
-    enum AIBackend: String, CaseIterable {
+    // Enhanced feature properties (used by AIBackendManager+Enhanced.swift)
+    @Published var connectionTestResults: [AIBackend: ConnectionTestResult] = [:]
+    @Published var usageStats: [AIBackend: UsageStats] = [:]
+    @Published var performanceMetrics: [AIBackend: PerformanceMetrics] = [:]
+    var monitoringTimer: Timer?
+
+    struct ConnectionTestResult {
+        let success: Bool
+        let responseTime: TimeInterval?
+        let error: String?
+        let timestamp: Date
+    }
+
+    struct UsageStats: Codable {
+        var totalTokens: Int = 0
+        var totalRequests: Int = 0
+        var totalCost: Double = 0.0
+        var averageResponseTime: Double = 0.0
+        var lastUsed: Date?
+
+        mutating func recordUsage(tokens: Int, cost: Double, responseTime: TimeInterval) {
+            totalTokens += tokens
+            totalRequests += 1
+            totalCost += cost
+            let totalTime = averageResponseTime * Double(totalRequests - 1) + responseTime
+            averageResponseTime = totalTime / Double(totalRequests)
+            lastUsed = Date()
+        }
+    }
+
+    struct PerformanceMetrics {
+        var averageLatency: TimeInterval = 0.0
+        var successRate: Double = 0.0
+        var totalAttempts: Int = 0
+        var successfulAttempts: Int = 0
+        var failedAttempts: Int = 0
+        var lastResponseTime: TimeInterval?
+        var lastSuccess: Date?
+        var lastFailure: Date?
+
+        mutating func recordSuccess(responseTime: TimeInterval) {
+            totalAttempts += 1
+            successfulAttempts += 1
+            lastResponseTime = responseTime
+            lastSuccess = Date()
+            let totalTime = averageLatency * Double(successfulAttempts - 1) + responseTime
+            averageLatency = totalTime / Double(successfulAttempts)
+            successRate = Double(successfulAttempts) / Double(totalAttempts)
+        }
+
+        mutating func recordFailure() {
+            totalAttempts += 1
+            failedAttempts += 1
+            lastFailure = Date()
+            successRate = Double(successfulAttempts) / Double(totalAttempts)
+        }
+    }
+
+    enum AIBackendError: Error {
+        case noBackendAvailable
+        case generateFailed(String)
+    }
+
+    enum AIBackend: String, CaseIterable, Codable {
         case ollama = "Ollama"
         case mlx = "MLX Toolkit"
         case tinyLLM = "TinyLLM"
@@ -382,16 +446,17 @@ class AIBackendManager: ObservableObject {
         swarmUIServerURL = defaults.string(forKey: "AIBackend_SwarmUIURL") ?? "http://localhost:7801"
         selectedOllamaModel = defaults.string(forKey: "AIBackend_OllamaModel") ?? "mistral:latest"
 
-        // Cloud API Keys (WARNING: These should be in Keychain in production!)
-        openAIAPIKey = defaults.string(forKey: "AIBackend_OpenAI_Key") ?? ""
-        googleCloudAPIKey = defaults.string(forKey: "AIBackend_GoogleCloud_Key") ?? ""
-        azureAPIKey = defaults.string(forKey: "AIBackend_Azure_Key") ?? ""
-        azureEndpoint = defaults.string(forKey: "AIBackend_Azure_Endpoint") ?? ""
-        awsAccessKey = defaults.string(forKey: "AIBackend_AWS_AccessKey") ?? ""
-        awsSecretKey = defaults.string(forKey: "AIBackend_AWS_SecretKey") ?? ""
-        awsRegion = defaults.string(forKey: "AIBackend_AWS_Region") ?? "us-east-1"
-        ibmWatsonAPIKey = defaults.string(forKey: "AIBackend_IBM_Key") ?? ""
-        ibmWatsonURL = defaults.string(forKey: "AIBackend_IBM_URL") ?? ""
+        // Cloud API Keys — stored in Keychain, never UserDefaults
+        migrateCredentialsFromUserDefaults()
+        openAIAPIKey      = loadFromKeychain(key: "openAIAPIKey")
+        googleCloudAPIKey = loadFromKeychain(key: "googleCloudAPIKey")
+        azureAPIKey       = loadFromKeychain(key: "azureAPIKey")
+        azureEndpoint     = defaults.string(forKey: "AIBackend_Azure_Endpoint") ?? ""  // non-secret
+        awsAccessKey      = loadFromKeychain(key: "awsAccessKey")
+        awsSecretKey      = loadFromKeychain(key: "awsSecretKey")
+        awsRegion         = defaults.string(forKey: "AIBackend_AWS_Region") ?? "us-east-1"  // non-secret
+        ibmWatsonAPIKey   = loadFromKeychain(key: "ibmWatsonAPIKey")
+        ibmWatsonURL      = defaults.string(forKey: "AIBackend_IBM_URL") ?? ""  // non-secret
 
         if let backendRaw = defaults.string(forKey: "AIBackend_Active"),
            let backend = AIBackend(rawValue: backendRaw) {
@@ -411,18 +476,71 @@ class AIBackendManager: ObservableObject {
         defaults.set(swarmUIServerURL, forKey: "AIBackend_SwarmUIURL")
         defaults.set(selectedOllamaModel, forKey: "AIBackend_OllamaModel")
 
-        // Cloud API Keys (WARNING: These should be in Keychain in production!)
-        defaults.set(openAIAPIKey, forKey: "AIBackend_OpenAI_Key")
-        defaults.set(googleCloudAPIKey, forKey: "AIBackend_GoogleCloud_Key")
-        defaults.set(azureAPIKey, forKey: "AIBackend_Azure_Key")
+        // Cloud API Keys — Keychain only, never UserDefaults
+        saveToKeychain(key: "openAIAPIKey",      value: openAIAPIKey)
+        saveToKeychain(key: "googleCloudAPIKey", value: googleCloudAPIKey)
+        saveToKeychain(key: "azureAPIKey",       value: azureAPIKey)
+        saveToKeychain(key: "awsAccessKey",      value: awsAccessKey)
+        saveToKeychain(key: "awsSecretKey",      value: awsSecretKey)
+        saveToKeychain(key: "ibmWatsonAPIKey",   value: ibmWatsonAPIKey)
+        // Non-secret config stays in UserDefaults
         defaults.set(azureEndpoint, forKey: "AIBackend_Azure_Endpoint")
-        defaults.set(awsAccessKey, forKey: "AIBackend_AWS_AccessKey")
-        defaults.set(awsSecretKey, forKey: "AIBackend_AWS_SecretKey")
         defaults.set(awsRegion, forKey: "AIBackend_AWS_Region")
-        defaults.set(ibmWatsonAPIKey, forKey: "AIBackend_IBM_Key")
         defaults.set(ibmWatsonURL, forKey: "AIBackend_IBM_URL")
 
         defaults.set(activeBackend.rawValue, forKey: "AIBackend_Active")
+    }
+
+    // MARK: - Keychain Helpers
+
+    private static let keychainService = "com.jordankoch.NewsSummary.AIBackend"
+
+    private func saveToKeychain(key: String, value: String) {
+        let data = value.data(using: .utf8) ?? Data()
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: Self.keychainService,
+            kSecAttrAccount: key
+        ]
+        SecItemDelete(query as CFDictionary)
+        guard !value.isEmpty else { return }
+        var add = query
+        add[kSecValueData] = data
+        SecItemAdd(add as CFDictionary, nil)
+    }
+
+    private func loadFromKeychain(key: String) -> String {
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: Self.keychainService,
+            kSecAttrAccount: key,
+            kSecReturnData: true,
+            kSecMatchLimit: kSecMatchLimitOne
+        ]
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data,
+              let value = String(data: data, encoding: .utf8) else { return "" }
+        return value
+    }
+
+    /// Migrates any API keys still in UserDefaults into Keychain, then removes them.
+    private func migrateCredentialsFromUserDefaults() {
+        let defaults = UserDefaults.standard
+        let keyMapping: [(udKey: String, kcKey: String)] = [
+            ("AIBackend_OpenAI_Key",   "openAIAPIKey"),
+            ("AIBackend_GoogleCloud_Key", "googleCloudAPIKey"),
+            ("AIBackend_Azure_Key",    "azureAPIKey"),
+            ("AIBackend_AWS_AccessKey","awsAccessKey"),
+            ("AIBackend_AWS_SecretKey","awsSecretKey"),
+            ("AIBackend_IBM_Key",      "ibmWatsonAPIKey")
+        ]
+        for map in keyMapping {
+            if let value = defaults.string(forKey: map.udKey), !value.isEmpty {
+                saveToKeychain(key: map.kcKey, value: value)
+                defaults.removeObject(forKey: map.udKey)
+            }
+        }
     }
 }
 
@@ -544,7 +662,7 @@ struct AIBackendSelectionView: View {
                                     Text(model).tag(model)
                                 }
                             }
-                            .onChange(of: manager.selectedOllamaModel) { _ in
+                            .onChange(of: manager.selectedOllamaModel) { _, _ in
                                 manager.saveConfiguration()
                             }
                         }

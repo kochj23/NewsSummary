@@ -80,31 +80,25 @@ struct AIBackendStatusMenu: View {
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(statusColor)
 
-                    if let backend = manager.activeBackend {
-                        Text(backend.rawValue)
-                            .font(.system(size: 9))
-                            .foregroundColor(.secondary)
-                    }
+                    Text(manager.activeBackend.rawValue)
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
                 }
             }
         }
     }
 
     private var statusColor: Color {
-        if manager.activeBackend != nil {
+        if hasAnyConfigured {
             return .green
-        } else if hasAnyConfigured {
-            return .gray
         } else {
             return .red
         }
     }
 
     private var statusText: String {
-        if manager.activeBackend != nil {
+        if hasAnyConfigured {
             return "Connected"
-        } else if hasAnyConfigured {
-            return "Not Configured"
         } else {
             return "Offline"
         }
@@ -279,7 +273,10 @@ struct AIBackendStatusMenu: View {
 
     private func truncateModelName(_ name: String) -> String {
         let parts = name.split(separator: ":")
-        return String(parts.first ?? name)
+        if let first = parts.first {
+            return String(first)
+        }
+        return name
     }
 }
 

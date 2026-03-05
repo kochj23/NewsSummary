@@ -1,4 +1,4 @@
-# News Summary v2.2 - The Smartest Way to Read News
+# News Summary v1.1.0 - The Smartest Way to Read News
 
 ![Build](https://github.com/kochj23/NewsSummary/actions/workflows/build.yml/badge.svg)
 
@@ -571,6 +571,16 @@ If you're in crisis, help is available:
 | [GTNW](https://github.com/kochj23/GTNW) | Global Thermal Nuclear War strategy game |
 
 > **[View all projects](https://github.com/kochj23?tab=repositories)**
+
+---
+
+## Version History
+
+### v1.1.0 (March 4, 2026) — Current
+- **Security: API keys migrated to macOS Keychain** — OpenAI, Google Cloud, Azure, AWS, and IBM Watson API keys are now stored in the macOS Keychain using `SecItemAdd`/`SecItemCopyMatching`. Automatic migration on first launch moves any existing UserDefaults credentials to Keychain and deletes them from UserDefaults. Non-sensitive config (region, endpoints, URLs) remains in UserDefaults.
+
+### v1.0.0 / v2.2.0 (February 2026)
+- Initial release — AI-powered news analysis with multi-perspective summaries, fact-checking, bias detection, CloudKit sync
 
 ---
 

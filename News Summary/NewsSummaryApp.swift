@@ -18,6 +18,10 @@ struct NewsSummaryApp: App {
     @StateObject private var menuBarAgent = NewsMenuBarAgent.shared
     @AppStorage("RunInMenuBarOnly") private var runInMenuBarOnly = false
 
+    init() {
+        NovaAPIServer.shared.start()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

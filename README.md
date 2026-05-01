@@ -1,15 +1,83 @@
 # News Summary v1.1.0 - The Smartest Way to Read News
 
 ![Build](https://github.com/kochj23/NewsSummary/actions/workflows/build.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **AI-Powered News Analysis Platform with Multi-Perspective Intelligence**
 
-![Platform](https://img.shields.io/badge/platform-macOS%2013.0%2B-blue)
+![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-2.2.0-success)
+![Version](https://img.shields.io/badge/version-1.1.0-success)
 ![AI](https://img.shields.io/badge/AI-10%20Backends-purple)
 ![Ethics](https://img.shields.io/badge/Ethics-Protected-green)
+![Tests](https://img.shields.io/badge/tests-50%2B-brightgreen)
+
+---
+
+## Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph "News Summary - macOS"
+        APP[NewsSummaryApp] --> CV[ContentView]
+        CV --> CTB[CategoryTabView]
+        CV --> AFV[ArticleFeedView]
+        CV --> ADV[ArticleDetailView]
+        CV --> CSV[CustomSourcesView]
+    end
+
+    subgraph "AI Engines"
+        AIB[AIBackendManager] --> OLL[Ollama - Local]
+        AIB --> MLX[MLX - Apple Silicon]
+        AIB --> OAI[OpenAI - Cloud]
+        AIB --> GCP[Google Cloud]
+        AIB --> AZR[Azure]
+        AIB --> AWS[AWS Bedrock]
+        AIB --> IBM[IBM Watson]
+        AIB --> TWU[TinyLLM / TinyChat / OpenWebUI]
+    end
+
+    subgraph "AI Analysis"
+        SUME[AISummarizationEngine]
+        MPA[MultiPerspectiveAnalyzer]
+        CBD[ContentBiasDetector]
+        FCE[FactCheckingEngine]
+        ETE[EntityTrackingEngine]
+        SCE[StoryClusteringEngine]
+        CCT[CompareCoverageTool]
+    end
+
+    subgraph "Services"
+        RSS[RSSParser - XMLParser] --> AGG[NewsAggregator]
+        AGG --> NE[NewsEngine]
+        BM[BookmarkManager]
+        EXP[ExportManager - PDF/MD]
+        IMG[ImageCacheManager - LRU]
+        AUD[AudioBriefingService]
+        ETH[EthicalAIGuardian]
+        RTE[ReadingTimeEstimator]
+        RA[ReadingAnalytics]
+    end
+
+    subgraph "Data Models"
+        NA[NewsArticle] --- NS[NewsSource]
+        NA --- NC[NewsCategory - 9 types]
+        NA --- BR[BiasRating / BiasSpectrum]
+        SG[StoryGroup]
+    end
+
+    subgraph "Persistence"
+        CD[CoreDataStack]
+        CK[CloudKitSyncManager]
+    end
+
+    NE --> AIB
+    NE --> SUME & MPA & CBD & FCE & ETE & SCE
+    ETH -.->|guards| AIB
+    AGG --> NA
+    RSS --> NA
+```
 
 ---
 
@@ -557,6 +625,32 @@ If you're in crisis, help is available:
 **News Summary v2.2 - Where echo chambers go to die.**
 
 © 2026 Jordan Koch. All rights reserved.
+
+---
+
+## Test Suite
+
+The project includes a comprehensive XCTest suite covering unit, functional, and security tests.
+
+### Test Categories
+
+| Category | Tests | Description |
+|----------|-------|-------------|
+| **NewsArticle Model** | 12 | Creation, equality, hashing, Codable, title similarity, recency |
+| **NewsCategory** | 4 | All cases, display names, icons, Codable |
+| **BiasSpectrum** | 7 | Values, ordering, symmetry, from-value mapping, short labels |
+| **BiasRating** | 4 | Confidence levels, labels, Codable |
+| **NewsSource** | 8 | Database coverage, category filtering, URLs, credibility |
+| **RSS Parser** | 9 | XML parsing, date formats, HTML stripping, malformed input |
+| **ReadingTime** | 8 | Word count, time estimation, formatting, difficulty |
+| **EthicalGuardian** | 3 | Enabled state, guidelines content, statistics |
+| **Security** | 6 | No hardcoded API keys, XSS sanitization, URL validation, HTTPS |
+
+### Running Tests
+
+```bash
+xcodebuild test -scheme "News Summary" -sdk macosx -destination "platform=macOS"
+```
 
 ---
 

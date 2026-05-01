@@ -36,6 +36,11 @@ class RSSParser: NSObject, XMLParserDelegate {
 
     // MARK: - XML Parsing
 
+    /// Parse RSS feed data (exposed for testing)
+    func parseFeedDataForTesting(_ data: Data, source: NewsSource) -> [NewsArticle] {
+        return parseFeedData(data, source: source)
+    }
+
     private func parseFeedData(_ data: Data, source: NewsSource) -> [NewsArticle] {
         let parser = XMLParser(data: data)
         parser.delegate = self

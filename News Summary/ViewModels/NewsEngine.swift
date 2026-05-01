@@ -11,6 +11,8 @@ import Combine
 
 @MainActor
 class NewsEngine: ObservableObject {
+    static let shared = NewsEngine()
+
     @Published var articles: [NewsCategory: [NewsArticle]] = [:]
     @Published var selectedCategory: NewsCategory = .us
     @Published var isLoading = false

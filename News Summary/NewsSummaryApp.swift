@@ -14,7 +14,7 @@ import WidgetKit
 @main
 struct NewsSummaryApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var newsEngine = NewsEngine()
+    @StateObject private var newsEngine = NewsEngine.shared
     @StateObject private var menuBarAgent = NewsMenuBarAgent.shared
     @AppStorage("RunInMenuBarOnly") private var runInMenuBarOnly = false
 

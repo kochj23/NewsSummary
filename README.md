@@ -1,652 +1,228 @@
-# News Summary v1.1.0 - The Smartest Way to Read News
+# News Summary
 
 ![Build](https://github.com/kochj23/NewsSummary/actions/workflows/build.yml/badge.svg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-**AI-Powered News Analysis Platform with Multi-Perspective Intelligence**
-
 ![Platform](https://img.shields.io/badge/platform-macOS%2014.0%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-1.1.0-success)
-![AI](https://img.shields.io/badge/AI-10%20Backends-purple)
-![Ethics](https://img.shields.io/badge/Ethics-Protected-green)
-![Tests](https://img.shields.io/badge/tests-50%2B-brightgreen)
+![Version](https://img.shields.io/badge/version-1.1.0-brightgreen)
+![Tests](https://img.shields.io/badge/tests-116%20passed-brightgreen)
+
+**AI-powered news aggregator with multi-perspective analysis, real-time fact checking, content-level bias detection, and ethical AI safeguards.**
+
+Written by Jordan Koch ([@kochj23](https://github.com/kochj23)).
 
 ---
 
-## Architecture Diagram
+## Architecture
 
 ```mermaid
 graph TD
-    subgraph "News Summary - macOS"
-        APP[NewsSummaryApp] --> CV[ContentView]
-        CV --> CTB[CategoryTabView]
-        CV --> AFV[ArticleFeedView]
-        CV --> ADV[ArticleDetailView]
-        CV --> CSV[CustomSourcesView]
+    subgraph App["News Summary.app (SwiftUI)"]
+        Entry[NewsSummaryApp] --> Content[ContentView]
+        Content --> Categories[CategoryTabView\n9 categories]
+        Content --> Feed[ArticleFeedView]
+        Content --> Detail[ArticleDetailView]
+        Content --> Sources[CustomSourcesView]
+
+        subgraph AIEngines["AI Analysis Engines"]
+            Summarize[AISummarizationEngine\n6 detail levels]
+            MultiPersp[MultiPerspectiveAnalyzer\nLeft / Center / Right]
+            Bias[ContentBiasDetector\n8 manipulation techniques]
+            FactCheck[FactCheckingEngine\n5 verdict types]
+            Entity[EntityTrackingEngine\n5 entity types]
+            Cluster[StoryClusteringEngine\nTimeline reconstruction]
+            Compare[CompareCoverageTool\nSide-by-side analysis]
+        end
+
+        subgraph Services["Services"]
+            RSS[RSSParser\nXMLParser-based]
+            Aggregator[NewsAggregator]
+            Engine[NewsEngine]
+            Bookmark[BookmarkManager]
+            Export[ExportManager\nPDF / Markdown]
+            ImageCache[ImageCacheManager\n500MB LRU]
+            Audio[AudioBriefingService]
+            Analytics[ReadingAnalytics\nEcho chamber detection]
+            Theme[ThemeManager\n4 themes]
+            Notify[SmartNotificationManager]
+            Scraper[ArticleScraperService]
+        end
+
+        AIBackend[AIBackendManager\n10 backends] --> AIEngines
+        Guardian[EthicalAIGuardian] -.->|guards| AIBackend
+        RSS --> Aggregator --> Engine
+        Engine --> AIEngines
+
+        API[NovaAPIServer\n127.0.0.1:37438]
     end
 
-    subgraph "AI Engines"
-        AIB[AIBackendManager] --> OLL[Ollama - Local]
-        AIB --> MLX[MLX - Apple Silicon]
-        AIB --> OAI[OpenAI - Cloud]
-        AIB --> GCP[Google Cloud]
-        AIB --> AZR[Azure]
-        AIB --> AWS[AWS Bedrock]
-        AIB --> IBM[IBM Watson]
-        AIB --> TWU[TinyLLM / TinyChat / OpenWebUI]
+    subgraph Data["Persistence"]
+        CoreData[CoreDataStack]
+        CloudKit[CloudKitSyncManager]
     end
 
-    subgraph "AI Analysis"
-        SUME[AISummarizationEngine]
-        MPA[MultiPerspectiveAnalyzer]
-        CBD[ContentBiasDetector]
-        FCE[FactCheckingEngine]
-        ETE[EntityTrackingEngine]
-        SCE[StoryClusteringEngine]
-        CCT[CompareCoverageTool]
+    subgraph Models["Data Models"]
+        Article[NewsArticle]
+        Source[NewsSource]
+        Category[NewsCategory\n9 types]
+        BiasModel[BiasRating\nBiasSpectrum]
     end
 
-    subgraph "Services"
-        RSS[RSSParser - XMLParser] --> AGG[NewsAggregator]
-        AGG --> NE[NewsEngine]
-        BM[BookmarkManager]
-        EXP[ExportManager - PDF/MD]
-        IMG[ImageCacheManager - LRU]
-        AUD[AudioBriefingService]
-        ETH[EthicalAIGuardian]
-        RTE[ReadingTimeEstimator]
-        RA[ReadingAnalytics]
-    end
-
-    subgraph "Data Models"
-        NA[NewsArticle] --- NS[NewsSource]
-        NA --- NC[NewsCategory - 9 types]
-        NA --- BR[BiasRating / BiasSpectrum]
-        SG[StoryGroup]
-    end
-
-    subgraph "Persistence"
-        CD[CoreDataStack]
-        CK[CloudKitSyncManager]
-    end
-
-    NE --> AIB
-    NE --> SUME & MPA & CBD & FCE & ETE & SCE
-    ETH -.->|guards| AIB
-    AGG --> NA
-    RSS --> NA
+    Keychain[macOS Keychain\nAll API keys] <--> App
 ```
 
 ---
 
-![News Summary](Screenshots/main-window.png)
+## Features
 
+### Multi-Perspective Analysis
 
-## 🏆 Why News Summary Matters
+Shows the same story from Left, Center, and Right perspectives side-by-side. Identifies shared facts, points of contention, and frame analysis showing how language differs across viewpoints. Exportable comparison reports in PDF and Markdown.
 
-**The Problem:** News today is:
-- Trapped in echo chambers
-- Full of misinformation
-- Time-consuming to read
-- Biased without transparency
-- Difficult to research
+### AI Summarization (6 Levels)
 
-**The Solution:** News Summary uses AI to:
-- **Break echo chambers** with multi-perspective analysis
-- **Verify facts** in real-time
-- **Save 60% of reading time** with AI summaries
-- **Detect bias** at content level, not just source
-- **Make research effortless** with smart organization
+| Level | Description |
+|---|---|
+| Headline | 10-15 words |
+| Brief | 2-3 sentences |
+| Standard | 1 paragraph |
+| Detailed | 3-5 paragraphs |
+| ELI5 | Simple language explanation |
+| Technical | Expert-level with domain knowledge |
 
-**Result:** You become truly informed, not just entertained.
+### Content-Level Bias Detection
 
----
+AI analyzes article text (not just source reputation): 8 manipulation techniques detected, loaded language highlighting, omission bias identification, frame control analysis, objectivity score (0-100).
 
-## ⭐ The Killer Feature: Multi-Perspective Analysis
+### Real-Time Fact Checking
 
-**What No Other News App Does:**
+5 verdict types: True, False, Misleading, Partially True, Unverifiable. Confidence scores (0-100%), evidence and sources provided, cross-article consensus.
 
-Shows the **same story** from **Left/Center/Right perspectives** side-by-side:
+### Entity Tracking
 
-```
-┌─────────────────┬─────────────────┬─────────────────┐
-│   LEFT VIEW     │   CENTER VIEW   │   RIGHT VIEW    │
-├─────────────────┼─────────────────┼─────────────────┤
-│ How left sources│ Neutral framing │ How right sources│
-│ frame the story │ with all sides  │ frame the story  │
-└─────────────────┴─────────────────┴─────────────────┘
+Automatic extraction of 5 entity types (people, organizations, locations, events, topics). Sentiment analysis per entity, relationship graphs, entity timelines.
 
-🟢 Shared Facts:  Points all sides agree on
-🟠 Contentions:   Points of disagreement
-📊 Frame Analysis: How language differs
-```
+### Story Clustering and Timelines
 
-**Why It's Revolutionary:**
-- Breaks echo chambers automatically
-- Shows HOW bias works (educational)
-- Professional research tool
-- Exportable comparison reports
-- Makes you truly informed, not just reinforced
+Automatically groups related articles into chronological timelines. Tracks story evolution with significance levels (Major / Update / Minor).
 
-**Use Cases:**
-- Journalists researching balanced coverage
-- Analysts understanding all perspectives
-- Citizens breaking out of partisan bubbles
-- Educators teaching media literacy
+### Coverage Comparison Tool
 
----
+Professional side-by-side analysis: tone comparison (Alarmist / Measured / etc.), key points from each perspective, shared facts versus contentions.
 
-## 🚀 18 Major Features
+### Reading Analytics
 
-### 🎯 Core AI Intelligence (7 Features)
+Reading habits tracking with echo chamber detection. Bias exposure metrics with weekly/monthly reports. Warns when reading patterns become one-sided.
 
-#### 1. **Multi-Level AI Summarization**
-Generate summaries at 6 detail levels:
-- **Headline:** 10-15 words (Twitter-length)
-- **Brief:** 2-3 sentences (quick scan)
-- **Standard:** 1 paragraph (main points)
-- **Detailed:** 3-5 paragraphs (full context)
-- **ELI5:** Explain Like I'm 5 (simple language)
-- **Technical:** Expert-level (domain knowledge)
+### News Sources and RSS
 
-**Why It Matters:** Different contexts need different detail. Morning commute ≠ evening research.
+Built-in source database with credibility ratings across 9 categories: US, World, Business, Technology, Science, Health, Entertainment, Sports, Opinion. Custom RSS source management. Article scraping for full-text extraction.
 
-#### 2. **Multi-Perspective Analysis** 🏆
-See how Left/Center/Right sources cover the same story.
+### Audio Briefings
 
-**Why It Matters:** Echo chambers are the #1 problem in news today. This breaks them automatically.
+Professional narration via cloud AI (AWS Polly, Google, Azure voices). Chapter markers and background playback.
 
-#### 3. **Content-Level Bias Detection**
-AI analyzes article text (not just source reputation):
-- 8 manipulation techniques detected
-- Loaded language highlighting
-- Omission bias identification
-- Frame control analysis
-- Objectivity score (0-100)
+### Export
 
-**Why It Matters:** Subtle bias is invisible to humans. AI catches what you miss.
+PDF and Markdown export for single articles or collections. Includes all AI analysis, metadata, and formatting.
 
-#### 4. **Real-Time Fact Checking**
-Verify claims automatically:
-- 5 verdict types (True, False, Misleading, Partially True, Unverifiable)
-- Confidence scores (0-100%)
-- Evidence and sources provided
-- Cross-article consensus
+### Smart Notifications
 
-**Why It Matters:** Misinformation spreads fast. Instant verification protects you.
+Priority-based breaking news alerts with Do Not Disturb hours, category filtering, and daily digest option.
 
-#### 5. **Entity Tracking & Relationships**
-Track people, organizations, locations:
-- Automatic extraction (5 entity types)
-- Sentiment analysis per entity
-- Relationship graphs
-- Entity timelines
+### Themes
 
-**Why It Matters:** Understanding who's involved reveals the bigger picture.
+4 themes: Light, Dark, OLED Black (true black), and System (auto-match).
 
-#### 6. **Story Clustering & Timelines**
-Automatically group related articles:
-- Chronological timeline reconstruction
-- Story evolution tracking
-- Significance levels (Major/Update/Minor)
+### Image Caching
 
-**Why It Matters:** News doesn't happen in isolation. See the full story arc.
+500 MB LRU cache with memory + disk layers for instant loading.
 
-#### 7. **Coverage Comparison Tool**
-Professional side-by-side analysis:
-- Tone comparison (Alarmist/Measured/etc.)
-- Key points from each perspective
-- Shared facts vs contentions
+### Local API Server
 
-**Why It Matters:** Research tool that journalists would pay $100/month for. You get it free.
+Port **37438**, loopback only. `GET /api/status` and `GET /api/ping`.
 
 ---
 
-### ⚡ User Experience (6 Features)
+## AI Backends
 
-#### 8. **Reading Time Estimates**
-Every article shows ⏱️ badges with difficulty levels.
+| Backend | Type | Notes |
+|---|---|---|
+| Ollama | Local | Preferred default, GPU-accelerated |
+| MLX | Local | Apple Silicon optimized |
+| TinyLLM | Local | Lightweight OpenAI-compatible |
+| TinyChat | Local | Fast chatbot interface |
+| OpenWebUI | Local | Self-hosted platform |
+| OpenAI | Cloud | GPT-4o |
+| Google Cloud | Cloud | Vertex AI |
+| Azure | Cloud | Cognitive Services |
+| AWS | Cloud | Bedrock, Polly |
+| IBM Watson | Cloud | NLU, Discovery |
 
-**Why It Matters:** Manage your time effectively. Know before you read.
-
-#### 9. **Smart Notifications**
-Priority-based breaking news alerts:
-- Do Not Disturb hours
-- Category filtering
-- Daily digest option
-
-**Why It Matters:** Most news apps spam. Smart filtering respects your time.
-
-#### 10. **Export to PDF/Markdown**
-Beautiful document export:
-- Single articles or collections
-- Formatted with metadata
-- Includes all AI analysis
-
-**Why It Matters:** Research requires sharing. Professional export in seconds.
-
-#### 11. **Keyboard Shortcuts**
-Power user productivity:
-- ⌘K: Search
-- ⌘B: Bookmark
-- ⌘R: Refresh
-- And more...
-
-**Why It Matters:** Keyboard > mouse. 10x faster workflow.
-
-#### 12. **Dark/Light/OLED (Organic Light-Emitting Diode) Themes**
-4 beautiful themes:
-- Light (bright environments)
-- Dark (low light)
-- OLED Black (true black)
-- System (auto-match)
-
-**Why It Matters:** Comfortable reading at any time, any environment.
-
-#### 13. **Audio Briefings**
-Professional narration with cloud AI:
-- AWS Polly, Google, Azure voices
-- Chapter markers
-- Background playback
-
-**Why It Matters:** Listen while driving, exercising, or working. Hands-free news.
+Auto-fallback: if primary backend fails, automatically tries next available. All API keys stored in macOS Keychain (migrated from UserDefaults in v1.1.0).
 
 ---
 
-### 💎 Research Tools (5 Features)
+## Ethical AI Safeguards
 
-#### 14. **Smart Bookmarks & Collections**
-Professional research organization:
-- Notes and tags
-- Text highlighting (5 colors)
-- Custom collections
-- Full-text search
-
-**Why It Matters:** News research requires organization. This makes it effortless.
-
-#### 15. **Reading Analytics Dashboard**
-Comprehensive insights:
-- Reading habits tracking
-- **Echo Chamber Detection** 🚨
-- Bias exposure metrics
-- Weekly/monthly reports
-
-**Why It Matters:** Can't improve what you don't measure. Self-awareness prevents echo chambers.
-
-#### 16. **Image Caching (LRU (Least Recently Used))**
-Smart image management:
-- 500 MB cache with LRU eviction
-- Memory + disk caching
-- Instant loading
-
-**Why It Matters:** Fast performance without wasting bandwidth.
-
-#### 17. **Full Article Scraping**
-Extract complete article text:
-- Multiple scraping strategies
-- HTML (Hypertext Markup Language) parsing
-- Smart content extraction
-
-**Why It Matters:** Read full articles without leaving the app. Complete context.
-
-#### 18. **Favorites Management**
-Save and organize favorite articles:
-- Quick access
-- Statistics
-- Export favorites
-
-**Why It Matters:** Build your personal library of important articles.
+All AI interactions pass through the EthicalAIGuardian: 100+ prohibited pattern detection, automatic blocking of harmful content, crisis resource referrals (988 Suicide Prevention, Crisis Text Line, Domestic Violence Hotline, SAMHSA), hashed violation logging.
 
 ---
 
-## ☁️ AI Backend Support (10 Backends)
+## Installation
 
-### Local (Free & Private):
-- **Ollama** - Fast, GPU (Graphics Processing Unit)-accelerated
-- **MLX (Machine Learning eXtensions)** - Apple Silicon optimized
-- **TinyLLM** - Lightweight Docker
-- **TinyChat** - Fast chatbot interface
-- **OpenWebUI** - Self-hosted platform
+Distributed as a DMG installer. Not available on the Mac App Store.
 
-### Cloud (Paid & Powerful):
-- **OpenAI** - GPT-4o ($10/1M tokens)
-- **Google Cloud** - Vertex AI ($7/1M tokens)
-- **Azure** - Cognitive Services ($10/1M tokens)
-- **AWS** - Bedrock, Polly ($8/1M tokens)
-- **IBM Watson** - Enterprise AI ($12/1M tokens)
-
-**Auto-Fallback:** If primary fails, automatically tries next available backend.
-
----
-
-## 🛡️ Ethical AI Safeguards
-
-**Cannot Be Used For:**
-- ⛔️ Illegal activities
-- ⛔️ Harmful content
-- ⛔️ Hate speech
-- ⛔️ Misinformation generation
-- ⛔️ Privacy violations
-- ⛔️ Harassment or abuse
-
-**Protection:**
-- 100+ prohibited pattern detection
-- AI-powered intent analysis
-- Automatic blocking
-- Violation logging
-- Crisis resource referrals (988, 741741, etc.)
-- Legal compliance (CSAM (Child Sexual Abuse Material) reporting)
-
-**Privacy:** All processing can be 100% local. No cloud required.
-
----
-
-## 💰 Value Proposition
-
-### Time Savings:
-- **Before:** 60 minutes/day reading news
-- **After:** 20 minutes/day (AI summaries)
-- **Savings:** 240 hours/year
-- **Value:** $12,000 - $48,000/year (at $50-200/hr)
-
-### Quality Improvements:
-- **Before:** Echo chamber risk
-- **After:** Multi-perspective understanding
-- **Result:** Truly informed decisions
-
-### Research Productivity:
-- **Before:** Hours to compare sources
-- **After:** Seconds with comparison tool
-- **Speedup:** 10-20x faster
-
----
-
-## 🎯 Who Should Use This
-
-### ✅ Perfect For:
-- **Journalists** - Research stories with balanced coverage
-- **Analysts** - Understand all perspectives
-- **Investors** - Monitor sentiment and trends
-- **Educators** - Teach media literacy
-- **Citizens** - Break out of echo chambers
-- **Researchers** - Organize sources professionally
-- **Anyone** - Who wants to be truly informed
-
-### ❌ Not For:
-- People who want their biases confirmed
-- Those who don't care about facts
-- Anyone wanting to stay in echo chambers
-
----
-
-## 🚀 Quick Start
-
-### Installation:
 ```bash
-# Download latest DMG (Disk Image) from releases
-open NewsSummary-v2.2.0.dmg
+# From DMG (recommended)
+# Download from https://github.com/kochj23/NewsSummary/releases
+# Drag News Summary.app to Applications
 
-# Or build from source
+# From source
 cd "/Volumes/Data/xcode/News Summary"
 xcodebuild -scheme "News Summary" -configuration Release build
-cp -R build/Release/"News Summary.app" ~/Applications/
 ```
 
-### Setup (5 minutes):
-1. Launch News Summary
-2. Install Ollama (free, local AI):
-   ```bash
-   brew install ollama
-   ollama serve
-   ollama pull mistral:latest
-   ```
-3. Status menu shows 🟢 Green
-4. Start reading!
+### Requirements
 
-### Or Use Cloud AI:
-1. Click ⚙️ Settings → AI Backend
-2. Select provider (OpenAI, Google, etc.)
-3. Enter API key
-4. Test connection
-5. Ready!
+- macOS 14.0 (Sonoma) or later
+- Xcode 15.0+ (building from source)
+- Internet connection (for RSS feeds; cloud AI optional)
+
+### AI Backend Quick Start
+
+```bash
+brew install ollama && ollama serve && ollama pull mistral:latest
+```
 
 ---
 
-## 📊 Features Comparison
+## Keyboard Shortcuts
 
-| Feature | News Summary | Ground News | Apple News | RSS (Really Simple Syndication) Readers |
-|---------|--------------|-------------|------------|-------------|
-| Multi-Perspective Analysis | ✅ Comprehensive | ❌ | ❌ | ❌ |
-| Content Bias Detection | ✅ AI-powered | ❌ | ❌ | ❌ |
-| Fact Checking | ✅ Real-time | ❌ | ❌ | ❌ |
-| Entity Tracking | ✅ Graphs | ❌ | ❌ | ❌ |
-| AI Summaries (6 levels) | ✅ | ❌ | ❌ | ❌ |
-| Echo Chamber Detection | ✅ Warns you | ❌ | ❌ | ❌ |
-| Audio Briefings | ✅ Cloud AI | ❌ | ❌ | ❌ |
-| Export Comparison Reports | ✅ PDF/MD | ❌ | ❌ | ❌ |
-| Bookmarks & Collections | ✅ Full | Basic | ❌ | Basic |
-| 100% Local AI Option | ✅ Privacy | ❌ | ❌ | ❌ |
-| Source Bias Indicators | ✅ | ✅ | ❌ | ❌ |
-| Price | Free | $10/mo | Free | Free |
-
-**News Summary is the ONLY app with comprehensive multi-perspective analysis and fact-checking.**
+| Shortcut | Action |
+|---|---|
+| Cmd+K | Search |
+| Cmd+B | Bookmark |
+| Cmd+R | Refresh feeds |
 
 ---
 
-## 🎨 User Interface
+## Testing
 
-### Main Dashboard:
-- Category tabs (US, World, Business, Tech, etc.)
-- Article feed with AI summaries
-- Bias indicators (L/C/R badges)
-- Reading time estimates
-- Breaking news banner
+116 tests in a single comprehensive XCTest file covering unit, functional, and security tests.
 
-### Article Detail:
-- Multi-level summary selector
-- Multi-perspective panel (when available)
-- Fact check results
-- Entity badges
-- Story timeline
-- Audio briefing player
-- Export options
-- Bookmark with notes
-
-### New Views:
-- Analytics Dashboard (reading habits, echo chamber warnings)
-- Bookmarks Library (research organization)
-- Comparison Tool (side-by-side analysis)
-- Timeline View (story evolution)
-
----
-
-## 💡 Real-World Examples
-
-### Example 1: Breaking Political News
-**Story:** "Infrastructure Bill Passes Congress"
-
-**Multi-Perspective Analysis:**
-- **Left:** Focuses on climate provisions, union jobs
-- **Center:** Highlights bipartisan compromise, bill details
-- **Right:** Emphasizes cost concerns, Republican amendments
-- **Shared Facts:** Bill amount, vote counts, passage date
-- **Contentions:** Whether it's too expensive, climate impact
-
-**Result:** You understand ALL sides, not just one.
-
-### Example 2: Economic News
-**Story:** "Federal Reserve Raises Interest Rates"
-
-**AI Summary (Brief):** "Fed raised rates 0.25% to combat inflation, citing strong employment data. Markets reacted negatively."
-
-**Fact Check:**
-- ✅ Rate increase: 0.25% (Verified)
-- ✅ Inflation cited: Confirmed
-- ⚠️ "Markets reacted negatively": Partially true (mixed results)
-
-**Entity Tracking:** Jerome Powell (mentioned 5x, neutral sentiment)
-
-**Result:** Quick understanding with verified facts.
-
----
-
-## 🔧 Technical Excellence
-
-### Architecture:
-- **SwiftUI** - Modern declarative UI
-- **Async/Await** - Clean concurrency
-- **@MainActor** - Thread-safe by design
-- **AIBackendManager** - 10 backends supported
-- **Ethical Guardian** - Misuse prevention
-
-### Performance:
-- Initial load: 5-10 seconds (100 articles)
-- AI summary: 1-3 seconds per article
-- Fact check: 2-5 seconds
-- Multi-perspective: 5-10 seconds
-- Category switch: <100ms (cached)
-
-### Privacy:
-- **100% local AI option** (Ollama, MLX)
-- **No tracking** (zero telemetry)
-- **No data collection**
-- **Open source** (MIT license)
-- **Ethical safeguards** (cannot misuse)
-
----
-
-## 📚 Use Cases
-
-### For Journalists:
-"I need to research how different outlets are covering this story"
-→ Use Compare Coverage Tool, export professional report
-
-### For Analysts:
-"I need to understand all perspectives on this policy"
-→ Use Multi-Perspective Analysis, see exact framing differences
-
-### For Investors:
-"I need to monitor market sentiment and company mentions"
-→ Use Entity Tracking, get sentiment trends
-
-### For Educators:
-"I need to teach students about media bias"
-→ Use Bias Detection, show real examples of manipulation
-
-### For Citizens:
-"I want to be informed without echo chambers"
-→ Use Echo Chamber Detection, get diverse source recommendations
-
----
-
-## 🆘 Crisis Resources
-
-If you're in crisis, help is available:
-- **988** - National Suicide Prevention Lifeline
-- **741741** - Crisis Text Line (text HOME)
-- **1-800-799-7233** - National Domestic Violence Hotline
-- **1-800-662-4357** - SAMHSA Substance Abuse Hotline
-
----
-
-## ⚖️ Ethical Usage
-
-**Acceptable Uses:**
-- ✅ Reading and understanding news
-- ✅ Research and education
-- ✅ Fact-checking
-- ✅ Media literacy
-- ✅ Balanced information gathering
-
-**Prohibited Uses:**
-- ⛔️ Generating fake news
-- ⛔️ Creating propaganda
-- ⛔️ Spreading misinformation
-- ⛔️ Any illegal activity
-
-**Read full terms:** [ETHICAL_AI_TERMS_OF_SERVICE.md](./ETHICAL_AI_TERMS_OF_SERVICE.md)
-
----
-
-## 📊 Statistics
-
-### Code:
-- **Files:** 25+ Swift files
-- **Lines:** ~10,000 lines
-- **AI Engines:** 7 sophisticated engines
-- **Features:** 18 major features
-
-### Performance:
-- **Accuracy:** 99%+ for AI analysis
-- **Speed:** 1-5 seconds for most operations
-- **Cache Hit Rate:** 80%+ (fast repeated access)
-
----
-
-## 🔗 Links
-
-- **GitHub:** https://github.com/kochj23/NewsSummary
-- **Author:** Jordan Koch ([@kochj23](https://github.com/kochj23))
-- **License:** MIT (code) + Ethical Terms (usage)
-- **Built With:** SwiftUI, AI (OpenAI, Google, Azure, AWS, IBM)
-
----
-
-## 🎓 Learn More
-
-### Documentation:
-- [Feature Proposal](./NEWS_SUMMARY_V2_FEATURE_PROPOSAL.md) - 35 features proposed
-- [Implementation Guide](./NEWS_SUMMARY_V2_IMPLEMENTATION_COMPLETE.md) - Technical details
-- [Ethical Terms](./ETHICAL_AI_TERMS_OF_SERVICE.md) - Usage guidelines
-
-### Setup Guides:
-- [Cloud AI Setup](../CLOUD_AI_QUICK_START_GUIDE.md) - 5-minute guide
-- [Integration Guide](../CLOUD_AI_INTEGRATION_MASTER_SUMMARY.md) - Complete overview
-
----
-
-## 🎯 Bottom Line
-
-**News Summary is the ONLY news app that:**
-1. Shows comprehensive multi-perspective analysis
-2. Does AI-powered content-level bias detection
-3. Fact-checks articles in real-time
-4. Warns about echo chambers
-5. Works 100% locally (privacy-first)
-
-**Result:** The smartest way to read news in 2026.
-
-**Try it.** Break your echo chamber. Verify facts. Save time. Become truly informed.
-
----
-
-**News Summary v2.2 - Where echo chambers go to die.**
-
-© 2026 Jordan Koch. All rights reserved.
-
----
-
-## Test Suite
-
-The project includes a comprehensive XCTest suite covering unit, functional, and security tests.
-
-### Test Categories
-
-| Category | Tests | Description |
-|----------|-------|-------------|
-| **NewsArticle Model** | 12 | Creation, equality, hashing, Codable, title similarity, recency |
-| **NewsCategory** | 4 | All cases, display names, icons, Codable |
-| **BiasSpectrum** | 7 | Values, ordering, symmetry, from-value mapping, short labels |
-| **BiasRating** | 4 | Confidence levels, labels, Codable |
-| **NewsSource** | 8 | Database coverage, category filtering, URLs, credibility |
-| **RSS Parser** | 9 | XML parsing, date formats, HTML stripping, malformed input |
-| **ReadingTime** | 8 | Word count, time estimation, formatting, difficulty |
-| **EthicalGuardian** | 3 | Enabled state, guidelines content, statistics |
-| **Security** | 6 | No hardcoded API keys, XSS sanitization, URL validation, HTTPS |
-
-### Running Tests
+| Category | Tests | Coverage |
+|---|---|---|
+| NewsArticle Model | 12 | Creation, equality, hashing, Codable, title similarity, recency |
+| NewsCategory | 4 | All cases, display names, icons, Codable |
+| BiasSpectrum | 7 | Values, ordering, symmetry, from-value mapping, short labels |
+| BiasRating | 4 | Confidence levels, labels, Codable |
+| NewsSource | 8 | Database coverage, category filtering, URLs, credibility |
+| RSS Parser | 9 | XML parsing, date formats, HTML stripping, malformed input |
+| ReadingTime | 8 | Word count, time estimation, formatting, difficulty |
+| EthicalGuardian | 3 | Enabled state, guidelines content, statistics |
+| Security | 6 | No hardcoded API keys, XSS sanitization, URL validation, HTTPS |
+| Additional | 55 | Comprehensive model, service, and integration coverage |
 
 ```bash
 xcodebuild test -scheme "News Summary" -sdk macosx -destination "platform=macOS"
@@ -654,62 +230,23 @@ xcodebuild test -scheme "News Summary" -sdk macosx -destination "platform=macOS"
 
 ---
 
-## More Apps by Jordan Koch
-
-| App | Description |
-|-----|-------------|
-| [MailSummary](https://github.com/kochj23/MailSummary) | AI-powered email categorization and summarization |
-| [JiraSummary](https://github.com/kochj23/JiraSummary) | AI-powered Jira dashboard with sprint analytics |
-| [MLXCode](https://github.com/kochj23/MLXCode) | Local AI coding assistant for Apple Silicon |
-| [Blompie](https://github.com/kochj23/Blompie) | AI-powered text adventure game engine |
-| [GTNW](https://github.com/kochj23/GTNW) | Global Thermal Nuclear War strategy game |
-
-> **[View all projects](https://github.com/kochj23?tab=repositories)**
-
----
-
 ## Version History
 
-### v1.1.0 (March 4, 2026) — Current
-- **Security: API keys migrated to macOS Keychain** — OpenAI, Google Cloud, Azure, AWS, and IBM Watson API keys are now stored in the macOS Keychain using `SecItemAdd`/`SecItemCopyMatching`. Automatic migration on first launch moves any existing UserDefaults credentials to Keychain and deletes them from UserDefaults. Non-sensitive config (region, endpoints, URLs) remains in UserDefaults.
-
-### v1.0.0 / v2.2.0 (February 2026)
-- Initial release — AI-powered news analysis with multi-perspective summaries, fact-checking, bias detection, CloudKit sync
+| Version | Date | Highlights |
+|---|---|---|
+| 1.1.0 | Mar 2026 | API keys migrated to macOS Keychain with automatic UserDefaults migration |
+| 1.0.0 | Feb 2026 | Initial release: multi-perspective analysis, fact checking, bias detection, CloudKit sync |
 
 ---
 
-> **Disclaimer:** This is a personal project created on my own time. It is not affiliated with, endorsed by, or representative of my employer.
+## License
 
-## Nova / Claude API Integration
+MIT License -- see [LICENSE](./LICENSE).
 
-This app exposes a local HTTP API on port **37438** for integration with [Nova](https://github.com/kochj23) (OpenClaw AI) and Claude Code.
+Copyright (c) 2026 Jordan Koch. All rights reserved.
 
-**Platform:** macOS  
-**Auth:** None (loopback only — macOS apps bind to 127.0.0.1)
+---
 
-### Standard Endpoints
+Written by Jordan Koch ([@kochj23](https://github.com/kochj23)).
 
-```bash
-curl http://127.0.0.1:37438/api/status   # App status + uptime
-curl http://127.0.0.1:37438/api/ping     # Health check
-```
-
-### App-Specific Endpoints
-
-```
-/api/status
-/api/ping
-```
-
-### Usage Example
-
-```bash
-# Check if running
-curl -s http://127.0.0.1:37438/api/status | python3 -m json.tool
-
-# From Nova (OpenClaw TUI)
-# Nova has this pre-authorized and will use these endpoints automatically
-```
-
-The API server starts automatically when the app launches and binds to loopback only — no external network exposure.
-
+> Disclaimer: This is a personal project created on my own time. It is not affiliated with, endorsed by, or representative of my employer.

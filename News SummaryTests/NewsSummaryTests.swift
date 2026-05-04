@@ -3,9 +3,10 @@
 //  News SummaryTests
 //
 //  Comprehensive test suite for News Summary
-//  Unit, Functional, and Security tests
+//  Unit, Functional, Integration, Security, and Frame tests
 //
 //  Created by Jordan Koch on 2026-05-01.
+//  Updated by Jordan Koch on 2026-05-03.
 //  Copyright (c) 2026 Jordan Koch. All rights reserved.
 //
 
@@ -44,6 +45,16 @@ enum TestData {
         bias: .right,
         credibility: 80,
         factuality: 0.78
+    )
+
+    static let lowCredibilitySource = NewsSource(
+        id: "low-cred",
+        name: "Tabloid Times",
+        rssURL: URL(string: "https://example.com/tabloid")!,
+        category: .entertainment,
+        bias: .farRight,
+        credibility: 35,
+        factuality: 0.40
     )
 
     static func makeArticle(
@@ -108,6 +119,19 @@ enum TestData {
     </channel></rss>
     """.data(using: .utf8)!
 
+    static let atomFeedData = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+        <title>Atom Feed</title>
+        <entry>
+            <title>Atom Entry Title</title>
+            <link href="https://example.com/atom1"/>
+            <summary>Summary of atom entry.</summary>
+            <published>2026-05-01T10:00:00Z</published>
+        </entry>
+    </feed>
+    """.data(using: .utf8)!
+
     static let htmlContent = """
     <p>This is <strong>bold</strong> text with <a href="link">a link</a>.</p>
     <script>alert('xss')</script>
@@ -127,7 +151,7 @@ enum TestData {
     ]
 }
 
-// MARK: - NewsArticle Model Tests
+// MARK: - NewsArticle Model Tests (Unit)
 
 final class NewsArticleTests: XCTestCase {
 
@@ -208,6 +232,11 @@ final class NewsArticleTests: XCTestCase {
         XCTAssertFalse(article.isRecent)
     }
 
+    func testIsRecentBoundary() {
+        let article = TestData.makeArticle(publishedDate: Date().addingTimeInterval(-86399)) // Just under 24h
+        XCTAssertTrue(article.isRecent)
+    }
+
     func testCompatibilityAliases() {
         let article = TestData.makeArticle(description: "Test description")
         XCTAssertEqual(article.articleDescription, "Test description")
@@ -223,9 +252,54 @@ final class NewsArticleTests: XCTestCase {
         XCTAssertEqual(decoded.title, "Codable Test")
         XCTAssertEqual(decoded.id, article.id)
     }
+
+    func testArticleCodableWithAllFields() throws {
+        var article = TestData.makeArticle(title: "Full Article", description: "Desc", isBreakingNews: true, importance: 9)
+        article.summary = "AI summary"
+        article.fullSummary = "Full AI summary"
+        article.keyPoints = ["Point 1", "Point 2"]
+        article.isRead = true
+        article.isFavorite = true
+        let data = try JSONEncoder().encode(article)
+        let decoded = try JSONDecoder().decode(NewsArticle.self, from: data)
+        XCTAssertEqual(decoded.summary, "AI summary")
+        XCTAssertEqual(decoded.keyPoints?.count, 2)
+        XCTAssertTrue(decoded.isRead)
+        XCTAssertTrue(decoded.isFavorite)
+        XCTAssertTrue(decoded.isBreakingNews)
+    }
+
+    func testTimeAgoString() {
+        let article = TestData.makeArticle(publishedDate: Date().addingTimeInterval(-7200))
+        let timeAgo = article.timeAgoString
+        XCTAssertFalse(timeAgo.isEmpty, "Time ago string should not be empty")
+    }
+
+    func testTimeSincePublication() {
+        let twoHoursAgo = Date().addingTimeInterval(-7200)
+        let article = TestData.makeArticle(publishedDate: twoHoursAgo)
+        XCTAssertEqual(article.timeSincePublication, 7200, accuracy: 2.0)
+    }
+
+    func testBreakingNewsArticle() {
+        let article = TestData.makeArticle(title: "BREAKING: Major Event", isBreakingNews: true, importance: 10)
+        XCTAssertTrue(article.isBreakingNews)
+        XCTAssertEqual(article.importance, 10)
+    }
+
+    func testArticleMutability() {
+        var article = TestData.makeArticle()
+        XCTAssertFalse(article.isRead)
+        article.isRead = true
+        XCTAssertTrue(article.isRead)
+        article.isFavorite = true
+        XCTAssertTrue(article.isFavorite)
+        article.summary = "New summary"
+        XCTAssertEqual(article.summary, "New summary")
+    }
 }
 
-// MARK: - NewsCategory Tests
+// MARK: - NewsCategory Tests (Unit)
 
 final class NewsCategoryTests: XCTestCase {
 
@@ -252,9 +326,23 @@ final class NewsCategoryTests: XCTestCase {
         let decoded = try JSONDecoder().decode(NewsCategory.self, from: data)
         XCTAssertEqual(decoded, category)
     }
+
+    func testAllCategoriesCodableRoundTrip() throws {
+        for category in NewsCategory.allCases {
+            let data = try JSONEncoder().encode(category)
+            let decoded = try JSONDecoder().decode(NewsCategory.self, from: data)
+            XCTAssertEqual(decoded, category, "Category \(category) should round-trip through Codable")
+        }
+    }
+
+    func testCategoryRawValues() {
+        XCTAssertEqual(NewsCategory.us.rawValue, "US")
+        XCTAssertEqual(NewsCategory.world.rawValue, "World")
+        XCTAssertEqual(NewsCategory.local.rawValue, "Local")
+    }
 }
 
-// MARK: - BiasSpectrum Tests
+// MARK: - BiasSpectrum Tests (Unit)
 
 final class BiasSpectrumTests: XCTestCase {
 
@@ -288,10 +376,28 @@ final class BiasSpectrumTests: XCTestCase {
         XCTAssertEqual(BiasSpectrum.from(value: -0.5), .centerLeft)
     }
 
+    func testFromValueEdgeCases() {
+        XCTAssertEqual(BiasSpectrum.from(value: -100.0), .farLeft)
+        XCTAssertEqual(BiasSpectrum.from(value: 100.0), .farRight)
+        XCTAssertEqual(BiasSpectrum.from(value: 0.3), .center)
+        XCTAssertEqual(BiasSpectrum.from(value: -0.3), .center)
+    }
+
     func testShortLabels() {
         XCTAssertEqual(BiasSpectrum.center.shortLabel, "C")
         XCTAssertEqual(BiasSpectrum.left.shortLabel, "L")
         XCTAssertEqual(BiasSpectrum.right.shortLabel, "R")
+        XCTAssertEqual(BiasSpectrum.farLeft.shortLabel, "FL")
+        XCTAssertEqual(BiasSpectrum.farRight.shortLabel, "FR")
+        XCTAssertEqual(BiasSpectrum.centerLeft.shortLabel, "CL")
+        XCTAssertEqual(BiasSpectrum.centerRight.shortLabel, "CR")
+    }
+
+    func testHexColors() {
+        for bias in BiasSpectrum.allCases {
+            XCTAssertFalse(bias.hexColor.isEmpty, "\(bias) should have a hex color")
+            XCTAssertTrue(bias.hexColor.hasPrefix("#"), "\(bias) hex color should start with #")
+        }
     }
 
     func testSpectrumCodable() throws {
@@ -302,7 +408,7 @@ final class BiasSpectrumTests: XCTestCase {
     }
 }
 
-// MARK: - BiasRating Tests
+// MARK: - BiasRating Tests (Unit)
 
 final class BiasRatingTests: XCTestCase {
 
@@ -329,6 +435,21 @@ final class BiasRatingTests: XCTestCase {
         XCTAssertEqual(rating.confidenceLabel, "Low")
     }
 
+    func testConfidenceBoundaryAt08() {
+        let rating = BiasRating(spectrum: .center, confidence: 0.8, sourceBias: 0.0,
+                                contentBias: nil, emotionalLanguageScore: nil,
+                                balanceScore: nil, reasoning: nil)
+        XCTAssertTrue(rating.isHighConfidence)
+        XCTAssertEqual(rating.confidenceLabel, "High")
+    }
+
+    func testConfidenceBoundaryAt06() {
+        let rating = BiasRating(spectrum: .center, confidence: 0.6, sourceBias: 0.0,
+                                contentBias: nil, emotionalLanguageScore: nil,
+                                balanceScore: nil, reasoning: nil)
+        XCTAssertEqual(rating.confidenceLabel, "Medium")
+    }
+
     func testBiasRatingCodable() throws {
         let rating = BiasRating(spectrum: .centerRight, confidence: 0.85, sourceBias: 0.7,
                                 contentBias: 0.5, emotionalLanguageScore: 0.3,
@@ -338,9 +459,20 @@ final class BiasRatingTests: XCTestCase {
         XCTAssertEqual(decoded.spectrum, .centerRight)
         XCTAssertEqual(decoded.confidence, 0.85, accuracy: 0.001)
     }
+
+    func testBiasRatingWithAllOptionalFields() throws {
+        let rating = BiasRating(spectrum: .left, confidence: 0.75, sourceBias: -1.0,
+                                contentBias: -0.8, emotionalLanguageScore: 0.6,
+                                balanceScore: 0.3, reasoning: "Emotional language detected")
+        let data = try JSONEncoder().encode(rating)
+        let decoded = try JSONDecoder().decode(BiasRating.self, from: data)
+        XCTAssertEqual(decoded.contentBias, -0.8, accuracy: 0.001)
+        XCTAssertEqual(decoded.emotionalLanguageScore, 0.6, accuracy: 0.001)
+        XCTAssertEqual(decoded.reasoning, "Emotional language detected")
+    }
 }
 
-// MARK: - NewsSource Tests
+// MARK: - NewsSource Tests (Unit / Integration)
 
 final class NewsSourceTests: XCTestCase {
 
@@ -357,6 +489,18 @@ final class NewsSourceTests: XCTestCase {
         }
     }
 
+    func testSourcesForAllCategories() {
+        for category in NewsCategory.allCases {
+            let sources = NewsSourceDatabase.sources(for: category)
+            if category == .local {
+                XCTAssertTrue(sources.isEmpty, "Local sources should be empty by default")
+            }
+            for source in sources {
+                XCTAssertEqual(source.category, category)
+            }
+        }
+    }
+
     func testLocalSourcesEmpty() {
         let localSources = NewsSourceDatabase.sources(for: .local)
         XCTAssertTrue(localSources.isEmpty, "Local sources should be empty by default")
@@ -367,6 +511,12 @@ final class NewsSourceTests: XCTestCase {
         XCTAssertEqual(source.category, .local)
         XCTAssertTrue(source.name.contains("Denver"))
         XCTAssertTrue(source.rssURL.absoluteString.contains("Denver"))
+    }
+
+    func testLocalNewsSourceSpecialCharacters() {
+        let source = NewsSourceDatabase.localNewsSource(city: "New York", state: "NY")
+        XCTAssertEqual(source.category, .local)
+        XCTAssertTrue(source.name.contains("New York"))
     }
 
     func testAllSourcesHaveValidURLs() {
@@ -397,9 +547,24 @@ final class NewsSourceTests: XCTestCase {
                             category: .world, bias: .left, credibility: 50, factuality: 0.50)
         XCTAssertEqual(s1, s2, "Sources with same id should be equal")
     }
+
+    func testSourceInequality() {
+        let s1 = NewsSource(id: "ap", name: "AP", rssURL: URL(string: "https://ap.com")!,
+                            category: .us, bias: .center, credibility: 95, factuality: 0.95)
+        let s2 = NewsSource(id: "reuters", name: "Reuters", rssURL: URL(string: "https://reuters.com")!,
+                            category: .us, bias: .center, credibility: 95, factuality: 0.94)
+        XCTAssertNotEqual(s1, s2, "Sources with different ids should not be equal")
+    }
+
+    func testAllSourcesHaveUniqueIDs() {
+        let allSources = NewsSourceDatabase.allSources
+        let ids = allSources.map(\.id)
+        let uniqueIDs = Set(ids)
+        XCTAssertEqual(ids.count, uniqueIDs.count, "All source IDs should be unique")
+    }
 }
 
-// MARK: - RSS Parser Tests
+// MARK: - RSS Parser Tests (Functional / Integration)
 
 final class RSSParserTests: XCTestCase {
 
@@ -438,10 +603,20 @@ final class RSSParserTests: XCTestCase {
         }
     }
 
+    func testCDATAContentParsed() {
+        let parser = RSSParser()
+        let articles = parser.parseFeedDataForTesting(TestData.sampleRSSData, source: TestData.testSource)
+        let techArticle = articles.first { $0.title.contains("Tech Giants") }
+        XCTAssertNotNil(techArticle)
+        if let desc = techArticle?.rssDescription {
+            XCTAssertFalse(desc.contains("CDATA"), "CDATA wrapper should be removed")
+            XCTAssertFalse(desc.contains("<p>"), "HTML tags inside CDATA should be stripped")
+        }
+    }
+
     func testMalformedRSSHandled() {
         let parser = RSSParser()
         let articles = parser.parseFeedDataForTesting(TestData.malformedRSSData, source: TestData.testSource)
-        // Should handle gracefully: items with missing links or empty titles are skipped
         XCTAssertLessThanOrEqual(articles.count, 1)
     }
 
@@ -489,9 +664,23 @@ final class RSSParserTests: XCTestCase {
             XCTAssertEqual(article.category, .us)
         }
     }
+
+    func testLargeRSSFeedPerformance() {
+        var rssString = "<?xml version=\"1.0\"?><rss><channel>"
+        for i in 0..<200 {
+            rssString += "<item><title>Article \(i)</title><link>https://example.com/\(i)</link><description>Description \(i)</description></item>"
+        }
+        rssString += "</channel></rss>"
+        let data = rssString.data(using: .utf8)!
+
+        let parser = RSSParser()
+        measure {
+            let _ = parser.parseFeedDataForTesting(data, source: TestData.testSource)
+        }
+    }
 }
 
-// MARK: - ReadingTimeEstimator Tests
+// MARK: - ReadingTimeEstimator Tests (Unit)
 
 final class ReadingTimeEstimatorTests: XCTestCase {
 
@@ -503,7 +692,6 @@ final class ReadingTimeEstimatorTests: XCTestCase {
     }
 
     func testReadingTimeForShortText() {
-        // 250 words at 250 WPM = 1 minute = 60 seconds
         let text = Array(repeating: "word", count: 250).joined(separator: " ")
         let time = ReadingTimeEstimator.estimateReadingTime(for: text)
         XCTAssertEqual(time, 60.0, accuracy: 1.0)
@@ -512,6 +700,12 @@ final class ReadingTimeEstimatorTests: XCTestCase {
     func testReadingTimeForEmptyText() {
         let time = ReadingTimeEstimator.estimateReadingTime(for: "")
         XCTAssertEqual(time, 0.0)
+    }
+
+    func testReadingTimeForLongText() {
+        let text = Array(repeating: "word", count: 1000).joined(separator: " ")
+        let time = ReadingTimeEstimator.estimateReadingTime(for: text)
+        XCTAssertEqual(time, 240.0, accuracy: 2.0) // 1000/250 * 60 = 240
     }
 
     func testFormatReadingTime() {
@@ -545,7 +739,7 @@ final class ReadingTimeEstimatorTests: XCTestCase {
     }
 }
 
-// MARK: - SourceCredibility Tests
+// MARK: - SourceCredibility Tests (Unit)
 
 final class SourceCredibilityTests: XCTestCase {
 
@@ -568,9 +762,27 @@ final class SourceCredibilityTests: XCTestCase {
         let cred = SourceCredibility(credibility: 40, factuality: 0.50, source: "Test")
         XCTAssertEqual(cred.label, "Low")
     }
+
+    func testCredibilityBoundaryAt90() {
+        let cred = SourceCredibility(credibility: 90, factuality: 0.90, source: "Test")
+        XCTAssertEqual(cred.label, "High")
+    }
+
+    func testCredibilityBoundaryAt75() {
+        let cred = SourceCredibility(credibility: 75, factuality: 0.80, source: "Test")
+        XCTAssertEqual(cred.label, "Good")
+    }
+
+    func testCredibilityCodable() throws {
+        let cred = SourceCredibility(credibility: 85, factuality: 0.88, source: "Test")
+        let data = try JSONEncoder().encode(cred)
+        let decoded = try JSONDecoder().decode(SourceCredibility.self, from: data)
+        XCTAssertEqual(decoded.credibility, 85)
+        XCTAssertEqual(decoded.factuality, 0.88, accuracy: 0.001)
+    }
 }
 
-// MARK: - StoryGroup Tests
+// MARK: - StoryGroup Tests (Functional)
 
 final class StoryGroupTests: XCTestCase {
 
@@ -613,9 +825,62 @@ final class StoryGroupTests: XCTestCase {
         XCTAssertTrue(distribution.contains("L"))
         XCTAssertTrue(distribution.contains("C"))
     }
+
+    func testStoryGroupIdentifiable() {
+        let article = TestData.makeArticle()
+        let group1 = StoryGroup(representativeArticle: article, articles: [article], biasRange: (min: 0, max: 0), averageBias: 0)
+        let group2 = StoryGroup(representativeArticle: article, articles: [article], biasRange: (min: 0, max: 0), averageBias: 0)
+        XCTAssertNotEqual(group1.id, group2.id, "Each StoryGroup should have a unique ID")
+    }
 }
 
-// MARK: - Ethical AI Guardian Tests
+// MARK: - Bookmark Model Tests (Unit)
+
+final class BookmarkModelTests: XCTestCase {
+
+    func testBookmarkCreation() {
+        let article = TestData.makeArticle(title: "Bookmark This")
+        let bookmark = Bookmark(article: article, notes: "Important", tags: ["economy", "fed"])
+        XCTAssertEqual(bookmark.article.title, "Bookmark This")
+        XCTAssertEqual(bookmark.notes, "Important")
+        XCTAssertTrue(bookmark.tags.contains("economy"))
+        XCTAssertTrue(bookmark.tags.contains("fed"))
+        XCTAssertEqual(bookmark.articleID, article.id)
+    }
+
+    func testBookmarkEquality() {
+        let article = TestData.makeArticle()
+        let id = UUID()
+        let b1 = Bookmark(id: id, article: article, notes: "A")
+        let b2 = Bookmark(id: id, article: article, notes: "B")
+        XCTAssertEqual(b1, b2, "Bookmarks with same ID should be equal")
+    }
+
+    func testHighlightCreation() {
+        let highlight = Highlight(text: "Important sentence", color: .yellow, note: "Review later")
+        XCTAssertEqual(highlight.text, "Important sentence")
+        XCTAssertEqual(highlight.color, .yellow)
+        XCTAssertEqual(highlight.note, "Review later")
+    }
+
+    func testHighlightColors() {
+        XCTAssertEqual(HighlightColor.allCases.count, 5)
+        for color in HighlightColor.allCases {
+            XCTAssertFalse(color.rawValue.isEmpty)
+        }
+    }
+
+    func testBookmarkCodable() throws {
+        let article = TestData.makeArticle(title: "Codable Bookmark")
+        let bookmark = Bookmark(article: article, notes: "Test notes", tags: ["tag1"])
+        let data = try JSONEncoder().encode(bookmark)
+        let decoded = try JSONDecoder().decode(Bookmark.self, from: data)
+        XCTAssertEqual(decoded.article.title, "Codable Bookmark")
+        XCTAssertEqual(decoded.notes, "Test notes")
+    }
+}
+
+// MARK: - Ethical AI Guardian Tests (Security / Integration)
 
 final class EthicalGuardianTests: XCTestCase {
 
@@ -639,7 +904,7 @@ final class EthicalGuardianTests: XCTestCase {
     }
 }
 
-// MARK: - Policy Violation Model Tests
+// MARK: - Policy Violation Model Tests (Unit / Security)
 
 final class PolicyViolationTests: XCTestCase {
 
@@ -673,6 +938,35 @@ final class PolicyViolationTests: XCTestCase {
         XCTAssertEqual(decoded.category, .illegalActivity)
         XCTAssertEqual(decoded.severity, .critical)
     }
+
+    func testEnforcementActions() {
+        let actions: [EnforcementAction] = [.blockCompletely, .blockAndRefer, .warnAndLog, .requireAcknowledgment, .logOnly]
+        for action in actions {
+            XCTAssertFalse(action.rawValue.isEmpty)
+        }
+    }
+
+    func testViolationStatisticsPercentages() {
+        let stats = ViolationStatistics(
+            totalRequests: 100,
+            safeRequests: 90,
+            violations: 10,
+            blocked: 5,
+            criticalViolations: 2,
+            highViolations: 3
+        )
+        XCTAssertEqual(stats.safePercentage, 90.0, accuracy: 0.01)
+        XCTAssertEqual(stats.violationPercentage, 10.0, accuracy: 0.01)
+    }
+
+    func testViolationStatisticsZeroRequests() {
+        let stats = ViolationStatistics(
+            totalRequests: 0, safeRequests: 0, violations: 0,
+            blocked: 0, criticalViolations: 0, highViolations: 0
+        )
+        XCTAssertEqual(stats.safePercentage, 100)
+        XCTAssertEqual(stats.violationPercentage, 0)
+    }
 }
 
 // MARK: - Security Tests
@@ -680,15 +974,13 @@ final class PolicyViolationTests: XCTestCase {
 final class SecurityTests: XCTestCase {
 
     func testNoHardcodedAPIKeys() {
-        // Verify no API keys are hardcoded in source files
         let dangerousPatterns = [
-            "sk-[A-Za-z0-9]{20,}",       // OpenAI keys
-            "AKIA[A-Z0-9]{16}",           // AWS access keys
-            "ghp_[A-Za-z0-9]{36}",        // GitHub PATs
-            "xox[bpoas]-[A-Za-z0-9]",     // Slack tokens
+            "sk-[A-Za-z0-9]{20,}",
+            "AKIA[A-Z0-9]{16}",
+            "ghp_[A-Za-z0-9]{36}",
+            "xox[bpoas]-[A-Za-z0-9]",
         ]
 
-        // Test that our test data does not contain real keys
         let testStrings = [
             TestData.htmlContent,
             TestData.sampleRSSData.base64EncodedString(),
@@ -739,7 +1031,6 @@ final class SecurityTests: XCTestCase {
     }
 
     func testURLValidation() {
-        // Test that the parser handles potentially malicious URLs safely
         let parser = RSSParser()
         let rss = """
         <?xml version="1.0"?><rss><channel>
@@ -751,7 +1042,6 @@ final class SecurityTests: XCTestCase {
         """.data(using: .utf8)!
         let articles = parser.parseFeedDataForTesting(rss, source: TestData.testSource)
         for article in articles {
-            // Verify URLs don't use javascript: scheme
             XCTAssertFalse(article.url.scheme == "javascript",
                           "javascript: URLs should not be accepted")
         }
@@ -774,11 +1064,146 @@ final class SecurityTests: XCTestCase {
     }
 
     func testSourceURLsUseHTTPS() {
-        // Most sources should use HTTPS
         let httpsSources = NewsSourceDatabase.allSources.filter {
             $0.rssURL.scheme == "https"
         }
         let ratio = Double(httpsSources.count) / Double(NewsSourceDatabase.allSources.count)
         XCTAssertGreaterThan(ratio, 0.5, "Most sources should use HTTPS")
+    }
+
+    func testNoCodableSecretLeaks() throws {
+        let article = TestData.makeArticle(title: "Secret Test")
+        let data = try JSONEncoder().encode(article)
+        let json = String(data: data, encoding: .utf8) ?? ""
+        XCTAssertFalse(json.contains("password"))
+        XCTAssertFalse(json.contains("apiKey"))
+        XCTAssertFalse(json.contains("secret"))
+    }
+
+    func testUsageContextCoverage() {
+        let contexts: [UsageContext] = [.textGeneration, .imageGeneration, .summarization,
+                                         .translation, .analysis, .chat, .email, .news, .system, .unknown]
+        for context in contexts {
+            XCTAssertFalse(context.rawValue.isEmpty)
+        }
+    }
+
+    func testLogCategoryCoverage() {
+        let categories: [LogCategory] = [.safe, .violation, .systemEvent]
+        for category in categories {
+            XCTAssertFalse(category.rawValue.isEmpty)
+        }
+    }
+}
+
+// MARK: - Frame / Performance Tests
+
+final class FrameTests: XCTestCase {
+
+    func testArticleCreationPerformance() {
+        measure {
+            for _ in 0..<1000 {
+                let _ = TestData.makeArticle()
+            }
+        }
+    }
+
+    func testTitleSimilarityPerformance() {
+        let a1 = TestData.makeArticle(title: "Federal Reserve raises interest rates in landmark decision affecting millions")
+        let a2 = TestData.makeArticle(title: "Interest rates raised by Federal Reserve in historic move affecting the economy")
+        measure {
+            for _ in 0..<1000 {
+                let _ = a1.titleSimilarity(to: a2)
+            }
+        }
+    }
+
+    func testArticleCodablePerformance() throws {
+        let articles = (0..<100).map { TestData.makeArticle(title: "Article \($0)") }
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+        measure {
+            for article in articles {
+                if let data = try? encoder.encode(article) {
+                    let _ = try? decoder.decode(NewsArticle.self, from: data)
+                }
+            }
+        }
+    }
+
+    func testSourceDatabaseLookupPerformance() {
+        measure {
+            for _ in 0..<1000 {
+                let _ = NewsSourceDatabase.sources(for: .us)
+                let _ = NewsSourceDatabase.sources(for: .technology)
+                let _ = NewsSourceDatabase.sources(for: .world)
+            }
+        }
+    }
+
+    func testReadingTimeEstimatorPerformance() {
+        let longText = Array(repeating: "The quick brown fox jumps over the lazy dog.", count: 100).joined(separator: " ")
+        measure {
+            for _ in 0..<1000 {
+                let _ = ReadingTimeEstimator.estimateReadingTime(for: longText)
+                let _ = ReadingTimeEstimator.estimateDifficulty(for: longText)
+            }
+        }
+    }
+}
+
+// MARK: - SignificanceLevel Tests (Unit)
+
+final class SignificanceLevelTests: XCTestCase {
+
+    func testSignificanceIcons() {
+        XCTAssertFalse(SignificanceLevel.major.icon.isEmpty)
+        XCTAssertFalse(SignificanceLevel.update.icon.isEmpty)
+        XCTAssertFalse(SignificanceLevel.minor.icon.isEmpty)
+    }
+
+    func testSignificanceColors() {
+        XCTAssertEqual(SignificanceLevel.major.color, "red")
+        XCTAssertEqual(SignificanceLevel.update.color, "orange")
+        XCTAssertEqual(SignificanceLevel.minor.color, "gray")
+    }
+
+    func testSignificanceCodable() throws {
+        let sig = SignificanceLevel.major
+        let data = try JSONEncoder().encode(sig)
+        let decoded = try JSONDecoder().decode(SignificanceLevel.self, from: data)
+        XCTAssertEqual(decoded, .major)
+    }
+}
+
+// MARK: - ImpactTimeframe Tests (Unit)
+
+final class ImpactTimeframeTests: XCTestCase {
+
+    func testTimeframeDescriptions() {
+        XCTAssertEqual(ImpactTimeframe.hours(6).description, "6 hours")
+        XCTAssertEqual(ImpactTimeframe.days(7).description, "7 days")
+        XCTAssertEqual(ImpactTimeframe.weeks(2).description, "2 weeks")
+        XCTAssertEqual(ImpactTimeframe.months(3).description, "3 months")
+    }
+
+    func testTimeframeCodable() throws {
+        let timeframe = ImpactTimeframe.days(14)
+        let data = try JSONEncoder().encode(timeframe)
+        let decoded = try JSONDecoder().decode(ImpactTimeframe.self, from: data)
+        XCTAssertEqual(decoded.description, "14 days")
+    }
+}
+
+// MARK: - BookmarkError Tests (Unit)
+
+final class BookmarkErrorTests: XCTestCase {
+
+    func testErrorDescriptions() {
+        XCTAssertNotNil(BookmarkError.bookmarkNotFound.errorDescription)
+        XCTAssertNotNil(BookmarkError.collectionNotFound.errorDescription)
+        XCTAssertNotNil(BookmarkError.duplicateBookmark.errorDescription)
+        XCTAssertNotNil(BookmarkError.exportFailed("test").errorDescription)
+        XCTAssertTrue(BookmarkError.exportFailed("disk full").errorDescription!.contains("disk full"))
     }
 }

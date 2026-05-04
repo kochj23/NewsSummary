@@ -13,6 +13,7 @@ class NewsAggregator: ObservableObject {
     private var cache: [NewsCategory: [NewsArticle]] = [:]
     private var cacheTimestamp: [NewsCategory: Date] = [:]
     private let cacheExpiration: TimeInterval = 3600  // 1 hour
+    private let maxCacheArticlesPerCategory = 500
 
     /// Fetch articles for a specific category
     func fetchArticles(for category: NewsCategory, userLocation: (String, String)? = nil) async -> [NewsArticle] {
@@ -62,11 +63,12 @@ class NewsAggregator: ObservableObject {
         // Limit to top 100 per category
         let limited = Array(sorted.prefix(100))
 
-        // Update cache
+        // Update cache with size enforcement
         cache[category] = limited
         cacheTimestamp[category] = Date()
+        enforceCacheLimit()
 
-        print("✅ Fetched \(limited.count) articles for \(category.rawValue) (from \(sources.count) sources)")
+        print("Fetched \(limited.count) articles for \(category.rawValue) (from \(sources.count) sources)")
         return limited
     }
 
@@ -80,6 +82,21 @@ class NewsAggregator: ObservableObject {
         }
 
         return results
+    }
+
+    /// Enforce maximum cache size per category. When exceeded, evict oldest articles first.
+    private func enforceCacheLimit() {
+        for category in cache.keys {
+            guard var articles = cache[category],
+                  articles.count > maxCacheArticlesPerCategory else { continue }
+
+            // Sort by publishedDate ascending (oldest first), keep newest
+            articles.sort { $0.publishedDate < $1.publishedDate }
+            let excess = articles.count - maxCacheArticlesPerCategory
+            articles.removeFirst(excess)
+            // Re-sort newest first for display
+            cache[category] = articles.sorted { $0.publishedDate > $1.publishedDate }
+        }
     }
 
     /// Invalidate cache for a category
@@ -97,40 +114,45 @@ class NewsAggregator: ObservableObject {
 
     // MARK: - Deduplication
 
-    /// Remove duplicate articles based on title similarity
+    /// Remove duplicate articles using normalized title hashing — O(n) instead of O(n^2).
+    /// Normalizes titles (lowercase, strip punctuation, sort words) and hashes them.
+    /// Articles with identical normalized hashes are considered duplicates.
     private func deduplicateArticles(_ articles: [NewsArticle]) -> [NewsArticle] {
         var unique: [NewsArticle] = []
-        var seenTitles: Set<String> = []
+        var seenHashes: Set<String> = []
 
         for article in articles {
-            let normalizedTitle = article.title.lowercased()
-                .replacingOccurrences(of: "[^a-z0-9\\s]", with: "", options: .regularExpression)
+            let hash = normalizedTitleHash(article.title)
 
-            // Check if we've seen a very similar title
-            let isDuplicate = seenTitles.contains { existingTitle in
-                let similarity = stringSimilarity(normalizedTitle, existingTitle)
-                return similarity > 0.85  // 85% similar = duplicate
-            }
-
-            if !isDuplicate {
+            if !seenHashes.contains(hash) {
                 unique.append(article)
-                seenTitles.insert(normalizedTitle)
+                seenHashes.insert(hash)
             }
         }
 
-        print("🔍 Deduplication: \(articles.count) → \(unique.count) unique articles")
+        print("Deduplication: \(articles.count) -> \(unique.count) unique articles")
         return unique
     }
 
-    /// Calculate string similarity (Jaccard similarity)
-    private func stringSimilarity(_ str1: String, _ str2: String) -> Double {
-        let words1 = Set(str1.components(separatedBy: .whitespaces))
-        let words2 = Set(str2.components(separatedBy: .whitespaces))
+    /// Produce a canonical hash string from a title:
+    /// lowercase, strip all non-alphanumeric/space chars, split into words,
+    /// remove common stop words, sort alphabetically, and join.
+    /// This catches reordered or slightly rephrased duplicate headlines.
+    private func normalizedTitleHash(_ title: String) -> String {
+        let stopWords: Set<String> = ["the", "a", "an", "is", "are", "was", "were", "in", "on",
+                                       "at", "to", "for", "of", "with", "by", "from", "and", "or",
+                                       "but", "not", "this", "that", "it", "its", "as"]
 
-        let intersection = words1.intersection(words2).count
-        let union = words1.union(words2).count
+        let lowered = title.lowercased()
+        let stripped = lowered.unicodeScalars.filter {
+            CharacterSet.alphanumerics.contains($0) || CharacterSet.whitespaces.contains($0)
+        }
+        let words = String(stripped)
+            .components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty && !stopWords.contains($0) }
+            .sorted()
 
-        return union > 0 ? Double(intersection) / Double(union) : 0.0
+        return words.joined(separator: " ")
     }
 
     // MARK: - Story Grouping

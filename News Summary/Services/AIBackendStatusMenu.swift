@@ -237,6 +237,8 @@ struct AIBackendStatusMenu: View {
         case .tinyChat: return "bubble.left.and.bubble.right.fill"
         case .openWebUI: return "globe"
         case .openAI: return "brain"
+        case .openRouter: return "cloud"
+        case .novaGateway: return "sparkle.magnifyingglass"
         case .googleCloud: return "cloud"
         case .azureCognitive: return "cloud.fill"
         case .awsAI: return "server.rack"
@@ -252,6 +254,8 @@ struct AIBackendStatusMenu: View {
         case .tinyChat: return manager.isTinyChatAvailable
         case .openWebUI: return manager.isOpenWebUIAvailable
         case .openAI: return manager.isOpenAIAvailable
+        case .openRouter: return manager.isOpenRouterAvailable
+        case .novaGateway: return manager.isNovaGatewayAvailable
         case .googleCloud: return manager.isGoogleCloudAvailable
         case .azureCognitive: return manager.isAzureAvailable
         case .awsAI: return manager.isAWSAvailable
@@ -261,9 +265,10 @@ struct AIBackendStatusMenu: View {
 
     private func isBackendConfigured(_ backend: AIBackendManager.AIBackend) -> Bool {
         switch backend {
-        case .ollama, .mlx, .tinyLLM, .tinyChat, .openWebUI:
-            return true // Local backends don't need configuration
+        case .ollama, .mlx, .tinyLLM, .tinyChat, .openWebUI, .novaGateway:
+            return true // Local/optional backends don't need configuration
         case .openAI: return !manager.openAIAPIKey.isEmpty
+        case .openRouter: return manager.openRouterAPIKey()?.isEmpty == false
         case .googleCloud: return !manager.googleCloudAPIKey.isEmpty
         case .azureCognitive: return !manager.azureAPIKey.isEmpty
         case .awsAI: return !manager.awsAccessKey.isEmpty

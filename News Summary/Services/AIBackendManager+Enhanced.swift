@@ -89,6 +89,8 @@ extension AIBackendManager {
         case .tinyChat: return isTinyChatAvailable
         case .openWebUI: return isOpenWebUIAvailable
         case .openAI: return isOpenAIAvailable
+        case .openRouter: return isOpenRouterAvailable
+        case .novaGateway: return isNovaGatewayAvailable
         case .googleCloud: return isGoogleCloudAvailable
         case .azureCognitive: return isAzureAvailable
         case .awsAI: return isAWSAvailable
@@ -167,11 +169,12 @@ extension AIBackendManager {
         let costPerMillion: Double = {
             switch backend {
             case .openAI: return 10.0
+            case .openRouter: return 5.0
             case .googleCloud: return 7.0
             case .azureCognitive: return 10.0
             case .awsAI: return 8.0
             case .ibmWatson: return 12.0
-            case .ollama, .mlx, .tinyLLM, .tinyChat, .openWebUI: return 0.0
+            case .ollama, .mlx, .tinyLLM, .tinyChat, .openWebUI, .novaGateway: return 0.0
             }
         }()
 

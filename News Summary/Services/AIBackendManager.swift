@@ -73,6 +73,36 @@ class AIBackendManager: ObservableObject {
     @Published var isAWSAvailable = false
     @Published var isIBMWatsonAvailable = false
 
+    // MARK: - Shared Multi-Model LLM Load Balancer
+
+    // OpenRouter (all frontier models behind one Keychain key)
+    @Published var openRouterModels: [String] = OpenRouterProvider.fallbackModels
+    @Published var selectedOpenRouterModel: String = OpenRouterProvider.defaultModel
+    @Published var isOpenRouterAvailable = false
+
+    // Nova Gateway (optional — never required; failed health → unavailable)
+    @Published var novaGatewayURL: String = ModelRegistry.novaGatewayDefaultURL
+    @Published var isNovaGatewayAvailable = false
+
+    // The three load-balancing toggles surfaced in settings.
+    @Published var useAllLocalModels = false        // balance across all local Ollama models
+    @Published var enableAllFrontierModels = false  // add all OpenRouter frontier models
+    @Published var useNovaGateway = false           // add Nova Gateway as a pool entry
+
+    // Live balancer state.
+    @Published var discoveredModels: [DiscoveredModel] = []
+    let loadBalancer = LoadBalancer()
+    var balancerPolicy: BalancerPolicy = .leastBusy
+
+    /// True when any balancing toggle is on — the `generate()` path then spreads
+    /// work across the healthy enabled pool before falling back.
+    var isBalancingEnabled: Bool {
+        useAllLocalModels || enableAllFrontierModels || useNovaGateway
+    }
+
+    /// Shared OpenRouter Keychain store (one key across Jordan's apps).
+    let openRouterKeychain = KeychainStore()
+
     // MARK: - Backend Enum
 
     // Enhanced feature properties (used by AIBackendManager+Enhanced.swift)
@@ -145,6 +175,8 @@ class AIBackendManager: ObservableObject {
         case tinyChat = "TinyChat"
         case openWebUI = "OpenWebUI"
         case openAI = "OpenAI"
+        case openRouter = "OpenRouter"
+        case novaGateway = "Nova Gateway"
         case googleCloud = "Google Cloud AI"
         case azureCognitive = "Microsoft Azure"
         case awsAI = "AWS AI Services"
@@ -154,6 +186,10 @@ class AIBackendManager: ObservableObject {
             switch self {
             case .ollama:
                 return "HTTP-based API (Ollama running on localhost:11434)"
+            case .openRouter:
+                return "Frontier cloud models via OpenRouter (bring your own key)"
+            case .novaGateway:
+                return "Nova's gateway — OpenAI-compatible, inherits Nova's routing (127.0.0.1:18792)"
             case .mlx:
                 return "Apple Silicon optimized (MLX framework)"
             case .tinyLLM:
@@ -212,6 +248,18 @@ class AIBackendManager: ObservableObject {
                 1. Sign up: https://platform.openai.com
                 2. Create API Key
                 3. Enter key in settings
+                """
+            case .openRouter:
+                return """
+                1. Sign up: https://openrouter.ai
+                2. Create an API key
+                3. Enter it in the Load Balancer settings
+                """
+            case .novaGateway:
+                return """
+                1. Nova Gateway V2 runs locally on 127.0.0.1:18792
+                2. Optional — the app works without it
+                3. Enable the Nova Gateway toggle in settings
                 """
             case .googleCloud:
                 return """
@@ -291,6 +339,16 @@ class AIBackendManager: ObservableObject {
         // Load Ollama models if available
         if ollama {
             await loadOllamaModels()
+        }
+
+        // Shared LLM load balancer backends. Both are resilient and optional —
+        // Nova Gateway is NEVER required; a failed health check simply marks it
+        // unavailable and it drops out of the pool.
+        let openRouter = await checkOpenRouterAvailability()
+        let nova = await checkNovaGatewayAvailability()
+        await MainActor.run {
+            isOpenRouterAvailable = openRouter
+            isNovaGatewayAvailable = nova
         }
     }
 
@@ -462,6 +520,14 @@ class AIBackendManager: ObservableObject {
            let backend = AIBackend(rawValue: backendRaw) {
             activeBackend = backend
         }
+
+        // Shared LLM load balancer configuration
+        useAllLocalModels       = defaults.bool(forKey: "AIBackend_UseAllLocalModels")
+        enableAllFrontierModels = defaults.bool(forKey: "AIBackend_EnableAllFrontierModels")
+        useNovaGateway          = defaults.bool(forKey: "AIBackend_UseNovaGateway")
+        novaGatewayURL          = defaults.string(forKey: "AIBackend_NovaGatewayURL") ?? ModelRegistry.novaGatewayDefaultURL
+        selectedOpenRouterModel = defaults.string(forKey: "AIBackend_OpenRouterModel") ?? OpenRouterProvider.defaultModel
+        // OpenRouter key lives in the shared Keychain (never UserDefaults).
     }
 
     func saveConfiguration() {
@@ -489,6 +555,13 @@ class AIBackendManager: ObservableObject {
         defaults.set(ibmWatsonURL, forKey: "AIBackend_IBM_URL")
 
         defaults.set(activeBackend.rawValue, forKey: "AIBackend_Active")
+
+        // Shared LLM load balancer configuration
+        defaults.set(useAllLocalModels, forKey: "AIBackend_UseAllLocalModels")
+        defaults.set(enableAllFrontierModels, forKey: "AIBackend_EnableAllFrontierModels")
+        defaults.set(useNovaGateway, forKey: "AIBackend_UseNovaGateway")
+        defaults.set(novaGatewayURL, forKey: "AIBackend_NovaGatewayURL")
+        defaults.set(selectedOpenRouterModel, forKey: "AIBackend_OpenRouterModel")
     }
 
     // MARK: - Keychain Helpers
@@ -549,6 +622,7 @@ class AIBackendManager: ObservableObject {
 struct AIBackendSelectionView: View {
     @ObservedObject var manager = AIBackendManager.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var openRouterKeyInput: String = AIBackendManager.shared.openRouterAPIKey() ?? ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -612,6 +686,59 @@ struct AIBackendSelectionView: View {
                             isAvailable: manager.isOpenWebUIAvailable,
                             url: manager.openWebUIServerURL
                         )
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.gray.opacity(0.1))
+                    )
+
+                    // Shared Multi-Model LLM Load Balancer Section
+                    Section {
+                        Text("Multi-Model Load Balancer")
+                            .font(.headline)
+
+                        Text("Spread generation across every healthy model. Nova Gateway is optional and never required.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Toggle("Balance across all local models (Ollama)", isOn: $manager.useAllLocalModels)
+                            .onChange(of: manager.useAllLocalModels) { _, _ in manager.saveConfiguration() }
+
+                        Toggle("Enable all frontier models (OpenRouter)", isOn: $manager.enableAllFrontierModels)
+                            .onChange(of: manager.enableAllFrontierModels) { _, _ in manager.saveConfiguration() }
+
+                        Toggle("Use Nova Gateway (optional)", isOn: $manager.useNovaGateway)
+                            .onChange(of: manager.useNovaGateway) { _, _ in manager.saveConfiguration() }
+
+                        Divider()
+
+                        HStack {
+                            Text("OpenRouter API Key")
+                                .font(.system(size: 13, weight: .medium))
+                            Spacer()
+                            Text(manager.isOpenRouterAvailable ? "Connected" : "Not connected")
+                                .font(.caption)
+                                .foregroundColor(manager.isOpenRouterAvailable ? .green : .secondary)
+                        }
+                        SecureField("sk-or-...", text: $openRouterKeyInput)
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit {
+                                manager.setOpenRouterAPIKey(openRouterKeyInput)
+                                Task { await manager.refreshAllBackends() }
+                            }
+
+                        HStack {
+                            Text("Nova Gateway")
+                                .font(.system(size: 13, weight: .medium))
+                            Spacer()
+                            Text(manager.isNovaGatewayAvailable ? "Available" : "Unavailable (optional)")
+                                .font(.caption)
+                                .foregroundColor(manager.isNovaGatewayAvailable ? .green : .secondary)
+                        }
+                        TextField("http://127.0.0.1:18792", text: $manager.novaGatewayURL)
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit { manager.saveConfiguration() }
                     }
                     .padding()
                     .background(

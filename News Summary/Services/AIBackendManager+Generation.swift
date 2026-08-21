@@ -22,7 +22,22 @@ extension AIBackendManager {
         maxTokens: Int = 1000
     ) async throws -> String {
 
-        guard isOllamaAvailable || isTinyLLMAvailable || isTinyChatAvailable || isOpenWebUIAvailable else {
+        // Load-balanced mode: when any balancing toggle is on, spread work across
+        // the healthy enabled pool (all local Ollama models + OpenRouter frontier
+        // + optional Nova Gateway). Falls through when the pool is empty.
+        if isBalancingEnabled {
+            if let balanced = try await generateBalanced(
+                prompt: prompt, systemPrompt: systemPrompt,
+                temperature: temperature, maxTokens: maxTokens
+            ) {
+                return balanced
+            }
+        }
+
+        // Cloud backends stand on their own credentials; local backends require a
+        // running local server.
+        let cloudSelected = activeBackend == .openAI || activeBackend == .openRouter || activeBackend == .novaGateway
+        guard cloudSelected || isOllamaAvailable || isTinyLLMAvailable || isTinyChatAvailable || isOpenWebUIAvailable else {
             throw AIError.noBackendAvailable
         }
 
@@ -64,7 +79,28 @@ extension AIBackendManager {
             )
 
         case .openAI:
-            throw AIError.mlxNotImplemented // Cloud providers not yet implemented in Blompie
+            return try await generateWithOpenAI(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            )
+
+        case .openRouter:
+            return try await generateWithOpenRouter(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            )
+
+        case .novaGateway:
+            return try await generateWithNovaGateway(
+                prompt: prompt,
+                systemPrompt: systemPrompt,
+                temperature: temperature,
+                maxTokens: maxTokens
+            )
 
         case .googleCloud:
             throw AIError.mlxNotImplemented

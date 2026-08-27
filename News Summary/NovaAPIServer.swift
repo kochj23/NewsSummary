@@ -57,7 +57,10 @@ class NovaAPIServer {
     // MARK: - Routing
 
     private func route(_ req: NovaRequest) async -> String {
-        if req.method == "OPTIONS" { return http(200, "") }
+        // Loopback-only: reject non-local Host headers. This blocks DNS-rebinding,
+        // where a website the user has open resolves its domain to 127.0.0.1 and
+        // drives this server. Native Nova clients always send a local Host.
+        guard req.isLocalHost else { return json(403, ["error": "Forbidden"] as [String: Any]) }
 
         let engine = NewsEngine.shared
 
@@ -233,6 +236,16 @@ class NovaAPIServer {
         let method: String
         let pathOnly: String
         let body: String
+        let host: String
+
+        /// True when the Host header names the loopback interface. Anything else
+        /// (e.g. an attacker's domain rebound to 127.0.0.1) is rejected.
+        var isLocalHost: Bool {
+            let name = host.hasPrefix("[")
+                ? String(host.dropFirst().prefix { $0 != "]" })
+                : (host.components(separatedBy: ":").first ?? host)
+            return ["127.0.0.1", "localhost", "::1"].contains(name)
+        }
 
         func bodyJSON() -> [String: Any]? {
             guard let d = body.data(using: .utf8) else { return nil }
@@ -257,6 +270,7 @@ class NovaAPIServer {
             method = tokens[0]
             pathOnly = tokens[1].components(separatedBy: "?").first ?? tokens[1]
             body = rawBody
+            host = hdrs["host"] ?? ""
         }
     }
 
@@ -273,7 +287,7 @@ class NovaAPIServer {
     }
 
     private func http(_ s: Int, _ body: String, _ ct: String = "text/plain") -> String {
-        let st = [200: "OK", 201: "Created", 400: "Bad Request", 404: "Not Found", 500: "Internal Server Error"][s] ?? "Unknown"
-        return "HTTP/1.1 \(s) \(st)\r\nContent-Type: \(ct); charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n\(body)"
+        let st = [200: "OK", 201: "Created", 400: "Bad Request", 403: "Forbidden", 404: "Not Found", 500: "Internal Server Error"][s] ?? "Unknown"
+        return "HTTP/1.1 \(s) \(st)\r\nContent-Type: \(ct); charset=utf-8\r\nContent-Length: \(body.utf8.count)\r\nConnection: close\r\n\r\n\(body)"
     }
 }
